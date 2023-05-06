@@ -7,8 +7,8 @@ fn main () -> Result<(), Box<dyn Error>> {
   let data : String = std::fs::read_to_string (input_filename)?;
   let lines: Vec<&str> = data.lines().collect();
   for i in 0..lines.len() {
-    let len = lines.len() - 1 - i;
-    println! (">>>{}<<< | {}", lines[len], lines[len].len());
+    let pos = lines.len() - 1 - i;
+    println! (">>>{}<<< | {}", lines[pos], lines[pos].len());
   }
   Ok (())
 }
