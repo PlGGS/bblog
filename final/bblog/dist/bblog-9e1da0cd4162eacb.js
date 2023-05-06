@@ -283,12 +283,12 @@ function getImports() {
         const ret = getObject(arg0).querySelector(v0);
         return isLikeNone(ret) ? 0 : addHeapObject(ret);
     }, arguments) };
-    imports.wbg.__wbg_warn_e57696dbb3977030 = function(arg0) {
-        console.warn(getObject(arg0));
-    };
     imports.wbg.__wbg_length_c54fcfc679a5bfbd = function(arg0) {
         const ret = getObject(arg0).length;
         return ret;
+    };
+    imports.wbg.__wbg_warn_e57696dbb3977030 = function(arg0) {
+        console.warn(getObject(arg0));
     };
     imports.wbg.__wbg_nodeName_fe55ff30e3328cac = function(arg0, arg1) {
         const ret = getObject(arg1).nodeName;
@@ -421,7 +421,7 @@ function initSync(module) {
 
 async function init(input) {
     if (typeof input === 'undefined') {
-        input = new URL('bblog-d0ac4efc045dec12_bg.wasm', import.meta.url);
+        input = new URL('bblog-9e1da0cd4162eacb_bg.wasm', import.meta.url);
     }
     const imports = getImports();
 
