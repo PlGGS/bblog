@@ -10,8 +10,10 @@ cfg_if! {
     if #[cfg(feature = "ssr")] {
         use sqlx::{Connection, SqliteConnection};
 
+        pub const DB_URL: &str = "sqlite://bblog.db";
+
         pub async fn db() -> Result<SqliteConnection, ServerFnError> {
-            SqliteConnection::connect("sqlite:BBlog.db").await.map_err(|e| ServerFnError::ServerError(e.to_string()))
+            SqliteConnection::connect(DB_URL).await.map_err(|e| ServerFnError::ServerError(e.to_string()))
         }
 
         pub fn register_server_functions() {
@@ -21,9 +23,9 @@ cfg_if! {
 
         #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, sqlx::FromRow)]
         pub struct Post {
-            post_uuid: String,
-            user_google_uuid: String,
-            series_uuid: String,
+            id: String,
+            user_id: String,
+            series_id: String,
             title: String,
             content: String,
             created_at: String,
@@ -34,9 +36,9 @@ cfg_if! {
     } else {
         #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
         pub struct Post {
-            post_uuid: String,
-            user_google_uuid: String,
-            series_uuid: String,
+            id: String,
+            user_id: String,
+            series_id: String,
             title: String,
             content: String,
             created_at: String,
@@ -71,17 +73,17 @@ pub async fn get_posts(cx: Scope) -> Result<Vec<Post>, ServerFnError> {
 }
 
 #[server(NewPost, "/api")]
-pub async fn new_post(user_google_id: String, series_uuid: String, title: String, content: String) -> Result<(), ServerFnError> {
+pub async fn new_post(cx: Scope, user_id: String, series_id: String, title: String, content: String) -> Result<(), ServerFnError> {
     let mut conn = db().await?;
 
-    let post_uuid: Uuid = Uuid::new_v4();
+    let id: Uuid = Uuid::new_v4();
     let current_time: String = get_current_timestamp();
 
     match sqlx::query
-    (format!("INSERT INTO posts (post_uuid, user_google_id, series_uuid, title, content, created_at, updated_at, draft_saved, posted) 
-    VALUES ({}, $1, $2, $3, $4, {}, {}, 1, 0)", post_uuid, current_time, current_time).as_str())
-        .bind(user_google_id)
-        .bind(series_uuid)
+    (format!("INSERT INTO posts (id, user_id, series_id, title, content, created_at, updated_at, draft_saved, posted) 
+    VALUES ({}, $1, $2, $3, $4, {}, {}, 1, 0)", id, current_time, current_time).as_str())
+        .bind(user_id)
+        .bind(series_id)
         .bind(title)
         .bind(content)
         .execute(&mut conn)

@@ -392,6 +392,7 @@ dependencies = [
  "leptos_router",
  "serde",
  "sqlx",
+ "tokio",
  "uuid",
  "wasm-bindgen",
 ]
