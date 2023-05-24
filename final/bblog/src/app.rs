@@ -50,6 +50,7 @@ cfg_if! {
 #[server(GetPosts, "/api")]
 pub async fn get_posts(cx: Scope) -> Result<Vec<Post>, ServerFnError> {
     // print api request path
+    //TODO figure out why this isn't working
     let req = use_context::<actix_web::HttpRequest>(cx);
     if let Some(req) = req {
         println!("req.path = {:#?}", req.path());
@@ -101,7 +102,7 @@ pub fn App(cx: Scope) -> impl IntoView {
 
     view! {
         cx,
-        <Link rel="shortcut icon" type_="image/ico" href="/favicon.ico"/>
+        <Link rel="favicon" type_="image/ico" href="/favicon.ico"/>
         <Stylesheet id="leptos" href="/pkg/bblog.css"/>
         <Title text="BBlog"/>
         <Router>
