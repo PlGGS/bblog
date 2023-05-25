@@ -9,6 +9,9 @@ CREATE TABLE IF NOT EXISTS users (
 	PRIMARY KEY(id AUTOINCREMENT)
 );
 
+INSERT INTO users (first_name, last_name, username, password_hash)
+	VALUES ('Guest', 'Guestington', 'guest', '');
+
 CREATE TABLE IF NOT EXISTS user_permissions (
     user_id  INTEGER NOT NULL,
     token    TEXT NOT NULL
