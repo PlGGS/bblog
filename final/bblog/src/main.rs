@@ -20,9 +20,7 @@ cfg_if! {
         use axum_session::{SessionConfig, SessionLayer, SessionStore};
         use axum_session_auth::{AuthSessionLayer, AuthConfig, SessionSqlitePool};
 
-        async fn server_fn_handler(State(app_state): State<AppState>, auth_session: AuthSession, path: Path<String>, headers: HeaderMap, raw_query: RawQuery,
-        request: Request<AxumBody>) -> impl IntoResponse {
-
+        async fn server_fn_handler(State(app_state): State<AppState>, auth_session: AuthSession, path: Path<String>, headers: HeaderMap, raw_query: RawQuery, request: Request<AxumBody>) -> impl IntoResponse {
             log!("{:?}", path);
 
             handle_server_fns_with_context(path, headers, raw_query, move |cx| {

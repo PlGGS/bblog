@@ -123,13 +123,11 @@ pub fn App(cx: Scope) -> impl IntoView {
 
     let user = create_resource(
         cx,
-        move || {
-            (
-                login.version().get(),
-                signup.version().get(),
-                logout.version().get(),
-            )
-        },
+        move || {(
+            login.version().get(),
+            signup.version().get(),
+            logout.version().get(),
+        )},
         move |_| get_user(cx),
     );
     provide_meta_context(cx);
@@ -140,51 +138,66 @@ pub fn App(cx: Scope) -> impl IntoView {
         <Stylesheet id="leptos" href="/pkg/bblog.css"/>
         <Router>
             <header>
-                <A href="/"><h1>"BBlog"</h1></A>
-                <Transition
-                    fallback=move || view! {cx, <span>"Loading..."</span>}
-                >
-                {move || {
-                    user.read(cx).map(|user| match user {
-                        Err(e) => view! {cx,
-                            <A href="/signup">"Signup"</A>", "
-                            <A href="/login">"Login"</A>", "
-                            <span>{format!("Login error: {}", e.to_string())}</span>
-                        }.into_view(cx),
-                        Ok(None) => view! {cx,
-                            <A href="/signup">"Signup"</A>", "
-                            <A href="/login">"Login"</A>", "
-                            <span>"Logged out."</span>
-                        }.into_view(cx),
-                        Ok(Some(user)) => view! {cx,
-                            <A href="/settings">"Settings"</A>", "
-                            <span>{format!("Hi, {}!", user.first_name)}</span>
-                        }.into_view(cx)
-                    })
-                }}
-                </Transition>
+                <div class="top-bar">
+                    <A href="/"><h1 class="left-align">"BBlog"</h1></A>
+                    <nav>
+                        <Transition
+                            fallback=move || view! {cx, <span>"Loading..."</span>}
+                        >
+                        {move || {
+                            user.read(cx).map(|user| match user {
+                                Err(e) => view! {cx,
+                                    <A href="/signup"><p>"Signup"</p></A>
+                                    <A href="/login"><p>"Login"</p></A>
+                                    <span>{format!("Login error: {}", e.to_string())}</span>
+                                }.into_view(cx),
+                                Ok(None) => view! {cx,
+                                    <A href="/signup"><p>"Signup"</p></A>
+                                    <A href="/login"><p>"Login"</p></A>
+                                    <div class="circle">
+                                        <A href="/profile">
+                                            <img src="/profile-img.jpg" alt="profile-img"/>
+                                        </A>
+                                    </div>
+                                }.into_view(cx),
+                                Ok(Some(user)) => view! {cx,
+                                    <A href="/settings">"Settings"</A>
+                                    <span>{format!("Hi, {}!", user.first_name)}</span>
+                                }.into_view(cx)
+                            })
+                        }}
+                        </Transition>
+                    </nav>
+                </div>
+                <hr/>
             </header>
-            <hr/>
             <main>
                 <Routes>
-                    <Route path="" view=|cx| view! {
-                        cx,
-                        <ErrorBoundary fallback=|cx, errors| view!{cx, <ErrorTemplate errors=errors/>}>
-                            <Posts/>
-                        </ErrorBoundary>
-                    }/> //Route
                     <Route path="signup" view=move |cx| view! {
                         cx,
                         <Signup action=signup/>
+                        <ErrorBoundary fallback=|cx, errors| view!{cx, <ErrorTemplate errors=errors/>}>
+                            <AllPosts/>
+                        </ErrorBoundary>
                     }/>
                     <Route path="login" view=move |cx| view! {
                         cx,
                         <Login action=login />
+                        <ErrorBoundary fallback=|cx, errors| view!{cx, <ErrorTemplate errors=errors/>}>
+                            <AllPosts/>
+                        </ErrorBoundary>
                     }/>
                     <Route path="settings" view=move |cx| view! {
                         cx,
                         <h1>"Settings"</h1>
                         <Logout action=logout />
+                        <ErrorBoundary fallback=|cx, errors| view!{cx, <ErrorTemplate errors=errors/>}>
+                            <AllPosts/>
+                        </ErrorBoundary>
+                    }/>
+                    <Route path="" view=|_cx| view! {
+                        cx,
+                        //components here always render
                     }/>
                 </Routes>
             </main>
@@ -193,7 +206,7 @@ pub fn App(cx: Scope) -> impl IntoView {
 }
 
 #[component]
-pub fn Posts(cx: Scope) -> impl IntoView {
+pub fn AllPosts(cx: Scope) -> impl IntoView {
     let posts = create_resource(
         cx,
         move || (),
@@ -319,7 +332,6 @@ pub fn Signup(
                 "Remember me?"
                 <input type="checkbox" name="remember" class="auth-input" />
             </label>
-
             <br/>
             <button type="submit" class="button">"Sign Up"</button>
         </ActionForm>
