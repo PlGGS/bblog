@@ -313,7 +313,7 @@ pub fn PostCard(cx: Scope, post: Post) -> impl IntoView {
                                 <img src="/profile-img.jpg" alt="Avatar"/>
                             </div>
                             <div>
-                                <UserFirstAndLastName id=post.user_id />
+                                <UserFirstAndLastName id=post.user_id.clone() />
                             </div>
                         </div>
                     </div>
