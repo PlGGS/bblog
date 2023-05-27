@@ -25,39 +25,64 @@ cfg_if! {
 
         pub fn register_server_functions() {
             _ = GetPosts::register();
+            _ = GetUser::register();
             _ = NewPostDraft::register();
             _ = DeletePost::register();
             _ = Login::register();
             _ = Logout::register();
             _ = Signup::register();
-            _ = GetUser::register();
+            _ = GetCurrentUser::register();
         }
 
         #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, sqlx::FromRow)]
         pub struct Post {
-            id: String,
-            user_id: String,
-            series_id: String,
+            id: u32,
+            user_id: u32,
+            series_id: u32,
             title: String,
+            tagline: String,
             content: String,
             created_at: String,
             updated_at: String,
             draft_saved: bool,
             posted: bool
+        }
+
+        #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, sqlx::FromRow)]
+        pub struct User {
+            id: u32,
+            first_name: String,
+            last_name: String,
+            username: String,
+            password_hash: String,
+            created_at: String,
+            updated_at: String,
         }
     }
     else {
         #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
         pub struct Post {
-            id: String,
-            user_id: String,
-            series_id: String,
+            id: u32,
+            user_id: u32,
+            series_id: u32,
             title: String,
+            tagline: String,
             content: String,
             created_at: String,
             updated_at: String,
             draft_saved: bool,
             posted: bool
+        }
+
+        #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+        pub struct User {
+            id: u32,
+            first_name: String,
+            last_name: String,
+            username: String,
+            password_hash: String,
+            created_at: String,
+            updated_at: String,
         }
     }
 }
@@ -69,19 +94,32 @@ pub async fn get_posts(cx: Scope) -> Result<Vec<Post>, ServerFnError> {
 
     let mut posts = Vec::new();
     let mut rows = sqlx::query_as::<_, Post>("SELECT * FROM posts").fetch(&pool);
-
-        while let Some(row) = rows.try_next()
+    while let Some(row) = rows.try_next()
         .await
         .map_err(|e| ServerFnError::ServerError(e.to_string()))? {
+            
         posts.push(row);
     }
 
     Ok(posts)
 }
 
+#[server(GetUser, "/api")]
+pub async fn get_user(cx: Scope, id: u32) -> Result<User, ServerFnError> {
+    let pool = pool(cx)?;
+
+    let user = sqlx::query_as::<_, User>("SELECT * FROM users WHERE id = ?")
+                .bind(id)
+                .fetch_one(&pool)
+                .await
+                .map_err(|e| ServerFnError::ServerError(e.to_string()))?;
+    
+    Ok(user)
+}
+
 #[server(NewPostDraft, "/api")]
 pub async fn new_post_draft(cx: Scope, series_id: String, title: String, content: String) -> Result<(), ServerFnError> {
-    let user = get_user(cx).await?;
+    let user = get_current_user(cx).await?;
     let pool = pool(cx)?;
 
     let user_id = match user {
@@ -121,14 +159,14 @@ pub fn App(cx: Scope) -> impl IntoView {
     let logout = create_server_action::<Logout>(cx);
     let signup = create_server_action::<Signup>(cx);
 
-    let user = create_resource(
+    let current_user = create_resource(
         cx,
         move || {(
             login.version().get(),
             signup.version().get(),
             logout.version().get(),
         )},
-        move |_| get_user(cx),
+        move |_| get_current_user(cx),
     );
     provide_meta_context(cx);
 
@@ -145,7 +183,7 @@ pub fn App(cx: Scope) -> impl IntoView {
                             fallback=move || view! {cx, <span>"Loading..."</span>}
                         >
                         {move || {
-                            user.read(cx).map(|user| match user {
+                            current_user.read(cx).map(|current_user| match current_user {
                                 Err(e) => view! {cx,
                                     <A href="/signup"><p>"Signup"</p></A>
                                     <A href="/login"><p>"Login"</p></A>
@@ -160,9 +198,9 @@ pub fn App(cx: Scope) -> impl IntoView {
                                         </A>
                                     </div>
                                 }.into_view(cx),
-                                Ok(Some(user)) => view! {cx,
+                                Ok(Some(current_user)) => view! {cx,
                                     <A href="/settings">"Settings"</A>
-                                    <span>{format!("Hi, {}!", user.first_name)}</span>
+                                    <span>{format!("Hi, {}!", current_user.first_name)}</span>
                                 }.into_view(cx)
                             })
                         }}
@@ -173,31 +211,32 @@ pub fn App(cx: Scope) -> impl IntoView {
             </header>
             <main>
                 <Routes>
+                    <Route path="u" view=move |cx| view! {
+                        cx,
+                        <h2>"Users coming soon..."</h2>
+                    }/>
+                    <Route path="post" view=move |cx| view! {
+                        cx,
+                        <h2>"Posts coming soon..."</h2>
+                    }/>
                     <Route path="signup" view=move |cx| view! {
                         cx,
                         <Signup action=signup/>
-                        <ErrorBoundary fallback=|cx, errors| view!{cx, <ErrorTemplate errors=errors/>}>
-                            <AllPosts/>
-                        </ErrorBoundary>
                     }/>
                     <Route path="login" view=move |cx| view! {
                         cx,
                         <Login action=login />
-                        <ErrorBoundary fallback=|cx, errors| view!{cx, <ErrorTemplate errors=errors/>}>
-                            <AllPosts/>
-                        </ErrorBoundary>
                     }/>
                     <Route path="settings" view=move |cx| view! {
                         cx,
                         <h1>"Settings"</h1>
                         <Logout action=logout />
+                    }/>
+                    <Route path="" view=|cx| view! {
+                        cx,
                         <ErrorBoundary fallback=|cx, errors| view!{cx, <ErrorTemplate errors=errors/>}>
                             <AllPosts/>
                         </ErrorBoundary>
-                    }/>
-                    <Route path="" view=|_cx| view! {
-                        cx,
-                        //components here always render
                     }/>
                 </Routes>
             </main>
@@ -232,16 +271,10 @@ pub fn AllPosts(cx: Scope) -> impl IntoView {
                                             .into_iter()
                                             .map(move |post| {
                                                 view! {
-                                                    cx,
-                                                    <li>
-                                                        {post.title}
-                                                    </li>
-                                                    <li>
-                                                        {post.content}
-                                                    </li>
-                                                    <li>
-                                                        {post.created_at}
-                                                    </li>
+                                                    cx, 
+                                                    <div>
+                                                        <PostCard post=post />
+                                                    </div>
                                                 }
                                             })
                                             .collect_view(cx)
@@ -254,14 +287,78 @@ pub fn AllPosts(cx: Scope) -> impl IntoView {
 
                     view! {
                         cx,
-                        <ul>
+                        <p>
                             {existing_posts}
-                        </ul>
+                        </p>
                     }
                 }
             }
             </Transition>
         </div>
+    }
+}
+
+#[component]
+pub fn PostCard(cx: Scope, post: Post) -> impl IntoView {
+    view! {
+        cx,
+        <div class="card">
+            <A href="/post">
+                <div class="container">
+                    <div class="text-content">
+                        <h4 class="title"><b>{post.title}</b></h4> 
+                        <p>{post.tagline}</p>
+                        <div class="author">
+                            <div class="author-circle">
+                                <img src="/profile-img.jpg" alt="Avatar"/>
+                            </div>
+                            <div>
+                                <UserFirstAndLastName id=post.user_id />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="post-image">
+                        <img src="/profile-img.jpg" alt="Avatar"/>
+                    </div>
+                </div>
+            </A>
+        </div>
+    }
+}
+
+#[component]
+pub fn UserFirstAndLastName(cx: Scope, id: u32) -> impl IntoView {
+    let user = create_resource(
+        cx,
+        move || (),
+        move |_| get_user(cx, id)
+    );
+
+    view! {
+        cx,
+        <Transition fallback=move || view! {cx, <div/> }>
+            {move || {
+                let existing_user = {
+                    move || {
+                        user.read(cx).map(move |user| match user {
+                            Err(e) => {
+                                view! { cx, <pre class="error">"Server Error: " {e.to_string()}</pre>}.into_view(cx)
+                            }
+                            Ok(user) => {
+                                view! { cx, {user.first_name}" "{user.last_name} }.into_view(cx)
+                            }
+                        })
+                        .unwrap_or_default()
+                    }
+                };
+
+                view! {
+                    cx,
+                    <p>{existing_user}</p>
+                }
+            }
+        }
+        </Transition>
     }
 }
 
@@ -275,18 +372,18 @@ pub fn Login(
         <ActionForm action=action>
             <h1>"Log In"</h1>
             <label>
-                "User ID:"
+                "Username: "
                 <input type="text" placeholder="User ID" maxlength="32" name="username" class="auth-input" />
             </label>
             <br/>
             <label>
-                "Password:"
+                "Password: "
                 <input type="password" placeholder="Password" name="password" class="auth-input" />
             </label>
             <br/>
             <label>
+                "Remember me? "
                 <input type="checkbox" name="remember" class="auth-input" />
-                "Remember me?"
             </label>
             <br/>
             <button type="submit" class="button">"Log In"</button>
@@ -304,32 +401,32 @@ pub fn Signup(
         <ActionForm action=action>
             <h1>"Sign Up"</h1>
             <label>
-                "First name:"
+                "First name: "
                 <input type="text" placeholder="First" maxlength="32" name="first_name" class="auth-input" />
             </label>
             <br/>
             <label>
-                "Last name:"
+                "Last name: "
                 <input type="text" placeholder="Last" maxlength="32" name="last_name" class="auth-input" />
             </label>
             <br/>
             <label>
-                "Username:"
+                "Username: "
                 <input type="text" placeholder="Username" maxlength="32" name="username" class="auth-input" />
             </label>
             <br/>
             <label>
-                "Password:"
+                "Password: "
                 <input type="password" placeholder="Password" name="password" class="auth-input" />
             </label>
             <br/>
             <label>
-                "Confirm Password:"
+                "Confirm Password: "
                 <input type="password" placeholder="Password again" name="password_confirmation" class="auth-input" />
             </label>
             <br/>
             <label>
-                "Remember me?"
+                "Remember me? "
                 <input type="checkbox" name="remember" class="auth-input" />
             </label>
             <br/>

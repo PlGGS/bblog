@@ -10,7 +10,8 @@ cfg_if! {
             body::Body as AxumBody,
             Router,
         };
-        use bblog::app::*;
+        use bblog::app::DB_URL;
+        use bblog::app::App;
         use bblog::auth::*;
         use bblog::state::AppState;
         use bblog::fallback::file_and_error_handler;
