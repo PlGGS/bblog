@@ -78,6 +78,13 @@ CREATE TABLE IF NOT EXISTS post_category (
 	FOREIGN KEY(category_id) REFERENCES categories(id)
 );
 
+-- CREATE TABLE IF NOT EXISTS user_subscription {
+-- 	user_id	INTEGER NOT NULL,
+-- 	subscription_user_id	INTEGER NOT NULL,
+-- 	FOREIGN KEY(user_id) REFERENCES users(id),
+-- 	FOREIGN KEY(subscription_user_id) REFERENCES users(id)
+-- }
+
 INSERT INTO users (first_name, last_name, username, password_hash)
 	VALUES ('Guest', 'Guestington', 'guest', '');
 

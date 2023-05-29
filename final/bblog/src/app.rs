@@ -88,12 +88,36 @@ cfg_if! {
 }
 
 #[server(GetPosts, "/api")]
-pub async fn get_posts(cx: Scope) -> Result<Vec<Post>, ServerFnError> {
+pub async fn get_posts(cx: Scope, posts_type: PostsType) -> Result<Vec<Post>, ServerFnError> {
     use futures::TryStreamExt;
+    let user = get_current_user(cx).await?;
     let pool = pool(cx)?;
 
+    let user_id = match user {
+        Some(user) => user.id,
+        None => -1, //TODO maybe handle this differently in the future
+    };
+
     let mut posts = Vec::new();
-    let mut rows = sqlx::query_as::<_, Post>("SELECT * FROM posts").fetch(&pool);
+
+    let query;
+    match posts_type {
+        PostsType::All => {
+            query = "SELECT * FROM posts";
+        },
+        PostsType::Subscriptions => {
+            query = "SELECT p.* FROM posts p
+                        JOIN user_subscription subscriber ON p.user_id = subscriber.subscription_user_id
+                        WHERE subscriber.user_id = ?"
+        },
+        PostsType::Recommended => {
+            query = "SELECT * FROM posts";
+        }
+    }
+
+    let mut rows = sqlx::query_as::<_, Post>(query)
+        .bind(user_id)
+        .fetch(&pool);
     while let Some(row) = rows.try_next()
         .await
         .map_err(|e| ServerFnError::ServerError(e.to_string()))? {
@@ -211,31 +235,31 @@ pub fn App(cx: Scope) -> impl IntoView {
             </header>
             <main>
                 <Routes>
-                    <Route path="u" view=move |cx| view! {
+                    <Route path="/u/:user_id" view=move |cx| view! {
                         cx,
-                        <h2>"Users coming soon..."</h2>
+                        <h2>"User profiles coming soon..."</h2>
                     }/>
-                    <Route path="post" view=move |cx| view! {
+                    <Route path="/post/:post_id" view=move |cx| view! {
                         cx,
                         <h2>"Posts coming soon..."</h2>
                     }/>
-                    <Route path="signup" view=move |cx| view! {
+                    <Route path="/signup" view=move |cx| view! {
                         cx,
                         <Signup action=signup/>
                     }/>
-                    <Route path="login" view=move |cx| view! {
+                    <Route path="/login" view=move |cx| view! {
                         cx,
                         <Login action=login />
                     }/>
-                    <Route path="settings" view=move |cx| view! {
+                    <Route path="/settings" view=move |cx| view! {
                         cx,
                         <h1>"Settings"</h1>
                         <Logout action=logout />
                     }/>
-                    <Route path="" view=|cx| view! {
+                    <Route path="/" view=|cx| view! {
                         cx,
                         <ErrorBoundary fallback=|cx, errors| view!{cx, <ErrorTemplate errors=errors/>}>
-                            <AllPosts/>
+                            <Posts posts_type=PostsType::All/>
                         </ErrorBoundary>
                     }/>
                 </Routes>
@@ -244,66 +268,88 @@ pub fn App(cx: Scope) -> impl IntoView {
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum PostsType {
+    All,
+    Subscriptions,
+    Recommended
+}
+
 #[component]
-pub fn AllPosts(cx: Scope) -> impl IntoView {
+pub fn Posts(cx: Scope, posts_type: PostsType) -> impl IntoView {
     let posts = create_resource(
         cx,
         move || (),
-        move |_| get_posts(cx),
+        move |_| get_posts(cx, posts_type),
     );
 
     view! {
         cx,
         <div>
-            <Transition fallback=move || view! {cx, <p>"Loading..."</p> }>
-                {move || {
-                    let existing_posts = {
-                        move || {
-                            posts.read(cx).map(move |posts| match posts {
-                                Err(e) => {
-                                    view! { cx, <pre class="error">"Server Error: " {e.to_string()}</pre>}.into_view(cx)
-                                }
-                                Ok(posts) => {
-                                    if posts.is_empty() {
-                                        view! { cx, <p>"No posts found."</p> }.into_view(cx)
-                                    } else {
-                                        posts
-                                            .into_iter()
-                                            .map(move |post| {
-                                                view! {
-                                                    cx, 
-                                                    <div>
-                                                        <PostCard post=post />
-                                                    </div>
+            {move || {
+                match posts_type {
+                    PostsType::All => view! { cx, 
+                        <Transition fallback=move || view! {cx, <p>"Loading..."</p> }>
+                            {move || {
+                                let existing_posts = {
+                                    move || {
+                                        posts.read(cx).map(move |posts| match posts {
+                                            Err(e) => {
+                                                view! { cx, <pre class="error">"Server Error: " {e.to_string()}</pre>}.into_view(cx)
+                                            }
+                                            Ok(posts) => {
+                                                if posts.is_empty() {
+                                                    view! { cx, <p>"No posts found."</p> }.into_view(cx)
+                                                } else {
+                                                    posts
+                                                        .into_iter()
+                                                        .map(move |post| {
+                                                            view! {
+                                                                cx, 
+                                                                <div>
+                                                                    <PostCard post=post />
+                                                                </div>
+                                                            }
+                                                        })
+                                                        .collect_view(cx)
                                                 }
-                                            })
-                                            .collect_view(cx)
+                                            }
+                                        })
+                                        .unwrap_or_default()
                                     }
-                                }
-                            })
-                            .unwrap_or_default()
-                        }
-                    };
+                                };
 
-                    view! {
-                        cx,
-                        <p>
-                            {existing_posts}
-                        </p>
-                    }
+                                view! {
+                                    cx,
+                                    <p>
+                                        {existing_posts}
+                                    </p>
+                                }
+                            }
+                        }
+                        </Transition>
+                    }.into_view(cx),
+                    PostsType::Subscriptions => {
+                        view! { cx, <div></div> }.into_view(cx)
+                    },
+                    PostsType::Recommended => {
+                        view! { cx, <div></div> }.into_view(cx)
+                    },
                 }
             }
-            </Transition>
+        }
         </div>
     }
 }
 
 #[component]
 pub fn PostCard(cx: Scope, post: Post) -> impl IntoView {
+    let post_route = String::from("/post/") + post.id.to_string().as_str();
+    
     view! {
         cx,
         <div class="card">
-            <A href="/post">
+            <A href=post_route>
                 <div class="container">
                     <div class="text-content">
                         <h4 class="title"><b>{post.title}</b></h4> 
