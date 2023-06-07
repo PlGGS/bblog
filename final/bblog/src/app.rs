@@ -344,36 +344,27 @@ pub fn PostList(cx: Scope, posts: Resource<(), Result<Vec<Post>, ServerFnError>>
         <div>
             <Transition fallback=move || view! {cx, <div/> }>
                 {move || {
-                    let existing_posts = {
-                        move || {
-                            posts.read(cx).map(move |posts| match posts {
-                                Err(e) => {
-                                    view! { cx, <pre class="error">"Server Error: " {e.to_string()}</pre>}.into_view(cx)
-                                }
-                                Ok(posts) => {
-                                    if posts.is_empty() {
-                                        view! { cx, <p>"No posts found."</p> }.into_view(cx)
-                                    } else {
-                                        posts
-                                            .into_iter()
-                                            .map(move |post| {
-                                                view! {
-                                                    cx, 
-                                                    <PostCard post=post />
-                                                }
-                                            })
-                                            .collect_view(cx)
-                                    }
-                                }
-                            })
-                            .unwrap_or_default()
+                    posts.read(cx).map(move |posts| match posts {
+                        Err(e) => {
+                            view! { cx, <pre class="error">"Server Error: " {e.to_string()}</pre>}.into_view(cx)
                         }
-                    };
-
-                    view! {
-                        cx,
-                        {existing_posts}
-                    }
+                        Ok(posts) => {
+                            if posts.is_empty() {
+                                view! { cx, <p>"No posts found."</p> }.into_view(cx)
+                            } else {
+                                posts
+                                    .into_iter()
+                                    .map(move |post| {
+                                        view! {
+                                            cx, 
+                                            <PostCard post=post />
+                                        }
+                                    })
+                                    .collect_view(cx)
+                            }
+                        }
+                    })
+                    .unwrap_or_default()
                 }}
             </Transition>
         </div>
@@ -417,36 +408,26 @@ pub fn AuthorLink(cx: Scope, id: u32) -> impl IntoView {
         cx,
         <Transition fallback=move || view! {cx, {} }>
             {move || {
-                let existing_user = {
-                    move || {
-                        user.read(cx).map(move |user| match user {
-                            Err(e) => {
-                                view! { cx, <pre class="error">"Server Error: " {e.to_string()}</pre>}.into_view(cx)
-                            }
-                            Ok(user) => {
-                                view! { 
-                                    cx, 
-                                    <div class="author">
-                                        <div class="author-circle">
-                                            <A href=format!("/u/{}", user.username)><img src="/profile-img.jpg" alt="Avatar"/></A>
-                                        </div>
-                                        <p>
-                                            <UserProfileLink id=user.id />
-                                        </p>
-                                    </div>
-                                }.into_view(cx)
-                            }
-                        })
-                        .unwrap_or_default()
+                user.read(cx).map(move |user| match user {
+                    Err(e) => {
+                        view! { cx, <pre class="error">"Server Error: " {e.to_string()}</pre>}.into_view(cx)
                     }
-                };
-
-                view! {
-                    cx,
-                    {existing_user}
-                }
-            }
-        }
+                    Ok(user) => {
+                        view! { 
+                            cx, 
+                            <div class="author">
+                                <div class="author-circle">
+                                    <A href=format!("/u/{}", user.username)><img src="/profile-img.jpg" alt="Avatar"/></A>
+                                </div>
+                                <p>
+                                    <UserProfileLink id=user.id />
+                                </p>
+                            </div>
+                        }.into_view(cx)
+                    }
+                })
+                .unwrap_or_default()
+            }}
         </Transition>
     }
 }
@@ -463,26 +444,16 @@ pub fn UserFirstAndLastName(cx: Scope, id: u32) -> impl IntoView {
         cx,
         <Transition fallback=move || view! {cx, {} }>
             {move || {
-                let existing_user = {
-                    move || {
-                        user.read(cx).map(move |user| match user {
-                            Err(e) => {
-                                view! { cx, <pre class="error">"Server Error: " {e.to_string()}</pre>}.into_view(cx)
-                            }
-                            Ok(user) => {
-                                view! { cx, {user.first_name}" "{user.last_name} }.into_view(cx)
-                            }
-                        })
-                        .unwrap_or_default()
+                user.read(cx).map(move |user| match user {
+                    Err(e) => {
+                        view! { cx, <pre class="error">"Server Error: " {e.to_string()}</pre>}.into_view(cx)
                     }
-                };
-
-                view! {
-                    cx,
-                    {existing_user}
-                }
-            }
-        }
+                    Ok(user) => {
+                        view! { cx, {user.first_name}" "{user.last_name} }.into_view(cx)
+                    }
+                })
+                .unwrap_or_default()
+            }}
         </Transition>
     }
 }
@@ -505,34 +476,25 @@ pub fn Post(cx: Scope) -> impl IntoView {
         <div>
             <Transition fallback=move || view! {cx, <p>"Loading..."</p> }>
                 {move || {
-                    let existing_post = {
-                        move || {
-                            post.read(cx).map(move |post| match post {
-                                Err(e) => {
-                                    view! { cx, <pre class="error">"Server Error: " {e.to_string()}</pre>}.into_view(cx)
-                                }
-                                Ok(post) => {
-                                    view! {
-                                        cx,
-                                        <div class="post">
-                                            <h1>{post.title}</h1>
-                                            //TODO make series component and get the series <h2>{post.series}</h2>
-                                            <h4><UserProfileLink id=post.user_id /></h4>
-                                            //TODO make date component and get post date here <h4>{post.title}</h4>
-                                            <p>{post.content}</p>
-                                        </div>
-                                    }
-                                    .into_view(cx)
-                                }
-                            })
-                            .unwrap_or_default()
+                    post.read(cx).map(move |post| match post {
+                        Err(e) => {
+                            view! { cx, <pre class="error">"Server Error: " {e.to_string()}</pre>}.into_view(cx)
                         }
-                    };
-
-                    view! {
-                        cx,
-                        {existing_post}
-                    }
+                        Ok(post) => {
+                            view! {
+                                cx,
+                                <div class="post">
+                                    <h1>{post.title}</h1>
+                                    //TODO make series component and get the series <h2>{post.series}</h2>
+                                    <h4><UserProfileLink id=post.user_id /></h4>
+                                    //TODO make date component and get post date here <h4>{post.title}</h4>
+                                    <p>{post.content}</p>
+                                </div>
+                            }
+                            .into_view(cx)
+                        }
+                    })
+                    .unwrap_or_default()
                 }}
             </Transition>
         </div>
@@ -551,26 +513,16 @@ pub fn UserProfileLink(cx: Scope, id: u32) -> impl IntoView {
         cx,
         <Transition fallback=move || view! {cx, {} }>
             {move || {
-                let existing_user = {
-                    move || {
-                        user.read(cx).map(move |user| match user {
-                            Err(e) => {
-                                view! { cx, <pre class="error">"Server Error: " {e.to_string()}</pre>}.into_view(cx)
-                            }
-                            Ok(user) => {
-                                view! { cx, <A href=format!("/u/{}", user.username)><UserFirstAndLastName id=user.id /></A> }.into_view(cx)
-                            }
-                        })
-                        .unwrap_or_default()
+                user.read(cx).map(move |user| match user {
+                    Err(e) => {
+                        view! { cx, <pre class="error">"Server Error: " {e.to_string()}</pre>}.into_view(cx)
                     }
-                };
-
-                view! {
-                    cx,
-                    {existing_user}
-                }
-            }
-        }
+                    Ok(user) => {
+                        view! { cx, <A href=format!("/u/{}", user.username)><UserFirstAndLastName id=user.id /></A> }.into_view(cx)
+                    }
+                })
+                .unwrap_or_default()
+            }}
         </Transition>
     }
 }
@@ -593,32 +545,23 @@ pub fn UserProfile(cx: Scope) -> impl IntoView {
         <div>
             <Transition fallback=move || view! {cx, <p>"Loading..."</p> }>
                 {move || {
-                    let existing_user = {
-                        move || {
-                            user.read(cx).map(move |user| match user {
-                                Err(e) => {
-                                    view! { cx, <pre class="error">"Server Error: " {e.to_string()}</pre>}.into_view(cx)
-                                }
-                                Ok(user) => {
-                                    view! {
-                                        cx,
-                                        <div class="user">
-                                            <h1><UserFirstAndLastName id=user.id /></h1>
-                                            //TODO make profile picture component and get it here next to their name in flex box
-                                            <UserPosts id=user.id />
-                                        </div>
-                                    }
-                                    .into_view(cx)
-                                }
-                            })
-                            .unwrap_or_default()
+                    user.read(cx).map(move |user| match user {
+                        Err(e) => {
+                            view! { cx, <pre class="error">"Server Error: " {e.to_string()}</pre>}.into_view(cx)
                         }
-                    };
-
-                    view! {
-                        cx,
-                        {existing_user}
-                    }
+                        Ok(user) => {
+                            view! {
+                                cx,
+                                <div class="user">
+                                    <h1><UserFirstAndLastName id=user.id /></h1>
+                                    //TODO make profile picture component and get it here next to their name in flex box
+                                    <UserPosts id=user.id />
+                                </div>
+                            }
+                            .into_view(cx)
+                        }
+                    })
+                    .unwrap_or_default()
                 }}
             </Transition>
         </div>
