@@ -1,4 +1,4 @@
-use crate::{auth::*, error_template::ErrorTemplate};
+use crate::{auth::*};
 use cfg_if::cfg_if;
 use leptos::*;
 use leptos_meta::*;
@@ -25,6 +25,7 @@ cfg_if! {
 
         pub fn register_server_functions() {
             _ = GetPosts::register();
+            _ = GetPost::register();
             _ = GetUser::register();
             _ = NewPostDraft::register();
             _ = DeletePost::register();
@@ -85,6 +86,19 @@ cfg_if! {
             updated_at: String,
         }
     }
+}
+
+#[server(GetPost, "/api")]
+pub async fn get_post(cx: Scope, id: u32) -> Result<Post, ServerFnError> {
+    let pool = pool(cx)?;
+
+    let post = sqlx::query_as::<_, Post>("SELECT * FROM posts WHERE id = ?")
+                .bind(id)
+                .fetch_one(&pool)
+                .await
+                .map_err(|e| ServerFnError::ServerError(e.to_string()))?;
+    
+    Ok(post)
 }
 
 #[server(GetPosts, "/api")]
@@ -245,7 +259,7 @@ pub fn App(cx: Scope) -> impl IntoView {
                     }/>
                     <Route path="/post/:post_id" view=move |cx| view! {
                         cx,
-                        <h2>"Posts coming soon..."</h2>
+                        <Post/>
                     }/>
                     <Route path="/signup" view=move |cx| view! {
                         cx,
@@ -350,9 +364,9 @@ pub fn PostCard(cx: Scope, post: Post) -> impl IntoView {
                             <div class="author-circle">
                                 <img src="/profile-img.jpg" alt="Avatar"/>
                             </div>
-                            <div>
+                            <p>
                                 <UserFirstAndLastName id=post.user_id.clone() />
-                            </div>
+                            </p>
                         </div>
                     </div>
                     <div class="post-image">
@@ -392,11 +406,63 @@ pub fn UserFirstAndLastName(cx: Scope, id: u32) -> impl IntoView {
 
                 view! {
                     cx,
-                    <p>{existing_user}</p>
+                    {existing_user}
                 }
             }
         }
         </Transition>
+    }
+}
+
+#[component]
+pub fn Post(cx: Scope) -> impl IntoView {
+    let params = use_params_map(cx);
+    
+    let get_post_id = move || params.with(|params| params.get("post_id").cloned().unwrap_or_default().parse::<u32>().unwrap_or_default());
+    let post_id: u32 = get_post_id();
+    
+    let post = create_resource(
+        cx,
+        move || (),
+        move |_| get_post(cx, post_id),
+    );
+
+    view! {
+        cx,
+        <div>
+            <Transition fallback=move || view! {cx, <p>"Loading..."</p> }>
+                {move || {
+                    let existing_post = {
+                        move || {
+                            post.read(cx).map(move |post| match post {
+                                Err(e) => {
+                                    view! { cx, <pre class="error">"Server Error: " {e.to_string()}</pre>}.into_view(cx)
+                                }
+                                Ok(post) => {
+                                    view! {
+                                        cx,
+                                        <div class="post">
+                                            <h1>{post.title}</h1>
+                                            //TODO make series component and get the series <h2>{post.series}</h2>
+                                            <h4><UserFirstAndLastName id=post.user_id.clone()/></h4>
+                                            //TODO make date component and get post date here <h4>{post.title}</h4>
+                                            <p>{post.content}</p>
+                                        </div>
+                                    }
+                                    .into_view(cx)
+                                }
+                            })
+                            .unwrap_or_default()
+                        }
+                    };
+
+                    view! {
+                        cx,
+                        {existing_post}
+                    }
+                }}
+            </Transition>
+        </div>
     }
 }
 

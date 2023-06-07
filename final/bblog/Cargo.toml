@@ -19,12 +19,6 @@ leptos = { git="https://github.com/leptos-rs/leptos", default-features = false, 
 leptos_meta = { git="https://github.com/leptos-rs/leptos", default-features = false }
 leptos_axum = { git="https://github.com/leptos-rs/leptos", optional = true }
 leptos_router = {  git="https://github.com/leptos-rs/leptos", default-features = false }
-# leptos = { version = "0.3", default-features = false, features = [
-#   "serde",
-# ] }
-# leptos_meta = { version = "0.3", default-features = false }
-# leptos_axum = { version = "0.3", optional = true }
-# leptos_router = { version = "0.3", default-features = false }
 log = "0.4.17"
 simple_logger = "4.0.0"
 serde = { version = "1.0.152", features = ["derive"] }
