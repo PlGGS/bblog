@@ -1,4 +1,4 @@
-use crate::{auth::*};
+use crate::auth::*;
 use cfg_if::cfg_if;
 use leptos::*;
 use leptos_meta::*;
@@ -26,7 +26,8 @@ cfg_if! {
         pub fn register_server_functions() {
             _ = GetPosts::register();
             _ = GetPost::register();
-            _ = GetUser::register();
+            _ = GetUserFromID::register();
+            _ = GetUserFromUsername::register();
             _ = NewPostDraft::register();
             _ = DeletePost::register();
             _ = Login::register();
@@ -119,6 +120,9 @@ pub async fn get_posts(cx: Scope, posts_type: PostsType) -> Result<Vec<Post>, Se
         PostsType::All => {
             query = "SELECT * FROM posts";
         },
+        PostsType::User => {
+            query = "SELECT p.* FROM posts p WHERE user_id = ?"
+        },
         PostsType::Subscriptions => {
             query = "SELECT p.* FROM posts p
                         JOIN user_subscription subscriber ON p.user_id = subscriber.subscription_user_id
@@ -139,15 +143,32 @@ pub async fn get_posts(cx: Scope, posts_type: PostsType) -> Result<Vec<Post>, Se
         posts.push(row);
     }
 
+    if (posts_type == PostsType::Recommended) {
+        //TODO randomize them or pull from your subscriber's other subscriptions?
+    }
+
     Ok(posts)
 }
 
-#[server(GetUser, "/api")]
-pub async fn get_user(cx: Scope, id: u32) -> Result<User, ServerFnError> {
+#[server(GetUserFromID, "/api")]
+pub async fn get_user_from_id(cx: Scope, id: u32) -> Result<User, ServerFnError> {
     let pool = pool(cx)?;
 
     let user = sqlx::query_as::<_, User>("SELECT * FROM users WHERE id = ?")
                 .bind(id)
+                .fetch_one(&pool)
+                .await
+                .map_err(|e| ServerFnError::ServerError(e.to_string()))?;
+    
+    Ok(user)
+}
+
+#[server(GetUserFromUsername, "/api")]
+pub async fn get_user_from_username(cx: Scope, username: String) -> Result<User, ServerFnError> {
+    let pool = pool(cx)?;
+
+    let user = sqlx::query_as::<_, User>("SELECT * FROM users WHERE username = ?")
+                .bind(username)
                 .fetch_one(&pool)
                 .await
                 .map_err(|e| ServerFnError::ServerError(e.to_string()))?;
@@ -221,7 +242,7 @@ pub fn App(cx: Scope) -> impl IntoView {
                             fallback=move || view! {cx, <span>"Loading..."</span>}
                         >
                         {move || {
-                            current_user.read(cx).map(|current_user| match current_user {
+                            current_user.read(cx).map(|user| match user {
                                 Err(e) => view! {cx,
                                     <A href="/signup"><p>"Signup"</p></A>
                                     <A href="/login"><p>"Login"</p></A>
@@ -230,15 +251,14 @@ pub fn App(cx: Scope) -> impl IntoView {
                                 Ok(None) => view! {cx,
                                     <A href="/signup"><p>"Signup"</p></A>
                                     <A href="/login"><p>"Login"</p></A>
+                                }.into_view(cx),
+                                Ok(Some(user)) => view! {cx,
+                                    <A href="/settings">"Settings"</A>
                                     <div class="circle">
-                                        <A href="/profile">
+                                        <A href=format!("/u/{}", user.username)>
                                             <img src="/profile-img.jpg" alt="profile-img"/>
                                         </A>
                                     </div>
-                                }.into_view(cx),
-                                Ok(Some(current_user)) => view! {cx,
-                                    <A href="/settings">"Settings"</A>
-                                    <span>{format!("Hi, {}!", current_user.first_name)}</span>
                                 }.into_view(cx)
                             })
                         }}
@@ -253,9 +273,9 @@ pub fn App(cx: Scope) -> impl IntoView {
                         cx,
                         <Posts posts_type=PostsType::All/>
                     }/>
-                    <Route path="/u/:user_id" view=move |cx| view! {
+                    <Route path="/u/:username" view=move |cx| view! {
                         cx,
-                        <h2>"User profiles coming soon..."</h2>
+                        <UserProfile />
                     }/>
                     <Route path="/post/:post_id" view=move |cx| view! {
                         cx,
@@ -263,7 +283,7 @@ pub fn App(cx: Scope) -> impl IntoView {
                     }/>
                     <Route path="/signup" view=move |cx| view! {
                         cx,
-                        <Signup action=signup/>
+                        <Signup action=signup />
                     }/>
                     <Route path="/login" view=move |cx| view! {
                         cx,
@@ -283,6 +303,7 @@ pub fn App(cx: Scope) -> impl IntoView {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum PostsType {
     All,
+    User,
     Subscriptions,
     Recommended
 }
@@ -298,10 +319,10 @@ pub fn Posts(cx: Scope, posts_type: PostsType) -> impl IntoView {
     view! {
         cx,
         <div>
-            <Transition fallback=move || view! {cx, <p>"Loading..."</p> }>
+            <Transition fallback=move || view! {cx, <div/> }>
                 {move || {
                     match posts_type {
-                        PostsType::All => view! { cx, 
+                        PostsType::All | PostsType::User => view! { cx, 
                             {move || {
                                 let existing_posts = {
                                     move || {
@@ -355,26 +376,67 @@ pub fn PostCard(cx: Scope, post: Post) -> impl IntoView {
     view! {
         cx,
         <div class="card">
-            <A href=post_route>
-                <div class="container">
-                    <div class="text-content">
+            <div class="container">
+                <div class="text-content">
+                    <A class="text-content-link" href=post_route.clone()>
                         <h4 class="title"><b>{post.title}</b></h4> 
                         <p>{post.tagline}</p>
-                        <div class="author">
-                            <div class="author-circle">
-                                <img src="/profile-img.jpg" alt="Avatar"/>
-                            </div>
-                            <p>
-                                <UserFirstAndLastName id=post.user_id.clone() />
-                            </p>
-                        </div>
-                    </div>
+                    </A>
+                    <AuthorLink id=post.user_id />
+                </div>
+                <A class="post-image-link" href=post_route>
                     <div class="post-image">
                         <img src="/profile-img.jpg" alt="Avatar"/>
                     </div>
-                </div>
-            </A>
+                </A>
+            </div>
         </div>
+    }
+}
+
+#[component]
+pub fn AuthorLink(cx: Scope, id: u32) -> impl IntoView {
+    let user = create_resource(
+        cx,
+        move || (),
+        move |_| get_user_from_id(cx, id)
+    );
+
+    view! {
+        cx,
+        <Transition fallback=move || view! {cx, {} }>
+            {move || {
+                let existing_user = {
+                    move || {
+                        user.read(cx).map(move |user| match user {
+                            Err(e) => {
+                                view! { cx, <pre class="error">"Server Error: " {e.to_string()}</pre>}.into_view(cx)
+                            }
+                            Ok(user) => {
+                                view! { 
+                                    cx, 
+                                    <div class="author">
+                                        <div class="author-circle">
+                                            <A href=format!("/u/{}", user.username)><img src="/profile-img.jpg" alt="Avatar"/></A>
+                                        </div>
+                                        <p>
+                                            <UserProfileLink id=user.id />
+                                        </p>
+                                    </div>
+                                }.into_view(cx)
+                            }
+                        })
+                        .unwrap_or_default()
+                    }
+                };
+
+                view! {
+                    cx,
+                    {existing_user}
+                }
+            }
+        }
+        </Transition>
     }
 }
 
@@ -383,12 +445,12 @@ pub fn UserFirstAndLastName(cx: Scope, id: u32) -> impl IntoView {
     let user = create_resource(
         cx,
         move || (),
-        move |_| get_user(cx, id)
+        move |_| get_user_from_id(cx, id)
     );
 
     view! {
         cx,
-        <Transition fallback=move || view! {cx, <div/> }>
+        <Transition fallback=move || view! {cx, {} }>
             {move || {
                 let existing_user = {
                     move || {
@@ -444,7 +506,7 @@ pub fn Post(cx: Scope) -> impl IntoView {
                                         <div class="post">
                                             <h1>{post.title}</h1>
                                             //TODO make series component and get the series <h2>{post.series}</h2>
-                                            <h4><UserFirstAndLastName id=post.user_id.clone()/></h4>
+                                            <h4><UserProfileLink id=post.user_id /></h4>
                                             //TODO make date component and get post date here <h4>{post.title}</h4>
                                             <p>{post.content}</p>
                                         </div>
@@ -459,6 +521,92 @@ pub fn Post(cx: Scope) -> impl IntoView {
                     view! {
                         cx,
                         {existing_post}
+                    }
+                }}
+            </Transition>
+        </div>
+    }
+}
+
+#[component]
+pub fn UserProfileLink(cx: Scope, id: u32) -> impl IntoView {
+    let user = create_resource(
+        cx,
+        move || (),
+        move |_| get_user_from_id(cx, id)
+    );
+
+    view! {
+        cx,
+        <Transition fallback=move || view! {cx, {} }>
+            {move || {
+                let existing_user = {
+                    move || {
+                        user.read(cx).map(move |user| match user {
+                            Err(e) => {
+                                view! { cx, <pre class="error">"Server Error: " {e.to_string()}</pre>}.into_view(cx)
+                            }
+                            Ok(user) => {
+                                view! { cx, <A href=format!("/u/{}", user.username)><UserFirstAndLastName id=user.id /></A> }.into_view(cx)
+                            }
+                        })
+                        .unwrap_or_default()
+                    }
+                };
+
+                view! {
+                    cx,
+                    {existing_user}
+                }
+            }
+        }
+        </Transition>
+    }
+}
+
+#[component]
+pub fn UserProfile(cx: Scope) -> impl IntoView {
+    let params = use_params_map(cx);
+    
+    let get_username = move || params.with(|params| params.get("username").cloned().unwrap_or_default());
+    let username: String = get_username();
+    
+    let user = create_resource(
+        cx,
+        move || (),
+        move |_| get_user_from_username(cx, username.clone()),
+    );
+
+    view! {
+        cx,
+        <div>
+            <Transition fallback=move || view! {cx, <p>"Loading..."</p> }>
+                {move || {
+                    let existing_user = {
+                        move || {
+                            user.read(cx).map(move |user| match user {
+                                Err(e) => {
+                                    view! { cx, <pre class="error">"Server Error: " {e.to_string()}</pre>}.into_view(cx)
+                                }
+                                Ok(user) => {
+                                    view! {
+                                        cx,
+                                        <div class="user">
+                                            <h1><UserFirstAndLastName id=user.id /></h1>
+                                            //TODO make profile picture component and get it here next to their name in flex box
+                                            <Posts posts_type=PostsType::User />
+                                        </div>
+                                    }
+                                    .into_view(cx)
+                                }
+                            })
+                            .unwrap_or_default()
+                        }
+                    };
+
+                    view! {
+                        cx,
+                        {existing_user}
                     }
                 }}
             </Transition>
