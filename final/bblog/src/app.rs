@@ -235,6 +235,10 @@ pub fn App(cx: Scope) -> impl IntoView {
             </header>
             <main>
                 <Routes>
+                    <Route path="" view=|cx| view! {
+                        cx,
+                        <Posts posts_type=PostsType::All/>
+                    }/>
                     <Route path="/u/:user_id" view=move |cx| view! {
                         cx,
                         <h2>"User profiles coming soon..."</h2>
@@ -255,12 +259,6 @@ pub fn App(cx: Scope) -> impl IntoView {
                         cx,
                         <h1>"Settings"</h1>
                         <Logout action=logout />
-                    }/>
-                    <Route path="/" view=|cx| view! {
-                        cx,
-                        <ErrorBoundary fallback=|cx, errors| view!{cx, <ErrorTemplate errors=errors/>}>
-                            <Posts posts_type=PostsType::All/>
-                        </ErrorBoundary>
                     }/>
                 </Routes>
             </main>
@@ -286,10 +284,10 @@ pub fn Posts(cx: Scope, posts_type: PostsType) -> impl IntoView {
     view! {
         cx,
         <div>
-            {move || {
-                match posts_type {
-                    PostsType::All => view! { cx, 
-                        <Transition fallback=move || view! {cx, <p>"Loading..."</p> }>
+            <Transition fallback=move || view! {cx, <p>"Loading..."</p> }>
+                {move || {
+                    match posts_type {
+                        PostsType::All => view! { cx, 
                             {move || {
                                 let existing_posts = {
                                     move || {
@@ -306,9 +304,7 @@ pub fn Posts(cx: Scope, posts_type: PostsType) -> impl IntoView {
                                                         .map(move |post| {
                                                             view! {
                                                                 cx, 
-                                                                <div>
-                                                                    <PostCard post=post />
-                                                                </div>
+                                                                <PostCard post=post />
                                                             }
                                                         })
                                                         .collect_view(cx)
@@ -321,23 +317,19 @@ pub fn Posts(cx: Scope, posts_type: PostsType) -> impl IntoView {
 
                                 view! {
                                     cx,
-                                    <p>
-                                        {existing_posts}
-                                    </p>
+                                    {existing_posts}
                                 }
-                            }
-                        }
-                        </Transition>
-                    }.into_view(cx),
-                    PostsType::Subscriptions => {
-                        view! { cx, <div></div> }.into_view(cx)
-                    },
-                    PostsType::Recommended => {
-                        view! { cx, <div></div> }.into_view(cx)
-                    },
-                }
-            }
-        }
+                            }}
+                        }.into_view(cx),
+                        PostsType::Subscriptions => {
+                            view! { cx, <div></div> }.into_view(cx)
+                        },
+                        PostsType::Recommended => {
+                            view! { cx, <div></div> }.into_view(cx)
+                        },
+                    }
+                }}
+            </Transition>
         </div>
     }
 }
