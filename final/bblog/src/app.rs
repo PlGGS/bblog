@@ -24,7 +24,8 @@ cfg_if! {
         }
 
         pub fn register_server_functions() {
-            _ = GetPosts::register();
+            _ = GetAllPosts::register();
+            _ = GetUserPosts::register();
             _ = GetPost::register();
             _ = GetUserFromID::register();
             _ = GetUserFromUsername::register();
@@ -102,38 +103,30 @@ pub async fn get_post(cx: Scope, id: u32) -> Result<Post, ServerFnError> {
     Ok(post)
 }
 
-#[server(GetPosts, "/api")]
-pub async fn get_posts(cx: Scope, posts_type: PostsType) -> Result<Vec<Post>, ServerFnError> {
+#[server(GetAllPosts, "/api")]
+pub async fn get_all_posts(cx: Scope) -> Result<Vec<Post>, ServerFnError> {
     use futures::TryStreamExt;
-    let user = get_current_user(cx).await?;
     let pool = pool(cx)?;
-
-    let user_id = match user {
-        Some(user) => user.id,
-        None => -1, //TODO maybe handle this differently in the future
-    };
-
     let mut posts = Vec::new();
+    let mut rows = sqlx::query_as::<_, Post>("SELECT * FROM posts")
+        .fetch(&pool);
 
-    let query;
-    match posts_type {
-        PostsType::All => {
-            query = "SELECT * FROM posts";
-        },
-        PostsType::User => {
-            query = "SELECT p.* FROM posts p WHERE user_id = ?"
-        },
-        PostsType::Subscriptions => {
-            query = "SELECT p.* FROM posts p
-                        JOIN user_subscription subscriber ON p.user_id = subscriber.subscription_user_id
-                        WHERE subscriber.user_id = ?"
-        },
-        PostsType::Recommended => {
-            query = "SELECT * FROM posts";
-        }
+    while let Some(row) = rows.try_next()
+        .await
+        .map_err(|e| ServerFnError::ServerError(e.to_string()))? {
+            
+        posts.push(row);
     }
 
-    let mut rows = sqlx::query_as::<_, Post>(query)
+    Ok(posts)
+}
+
+#[server(GetUserPosts, "/api")]
+pub async fn get_user_posts(cx: Scope, user_id: u32) -> Result<Vec<Post>, ServerFnError> {
+    use futures::TryStreamExt;
+    let pool = pool(cx)?;
+    let mut posts = Vec::new();
+    let mut rows = sqlx::query_as::<_, Post>("SELECT * FROM posts WHERE user_id = ?")
         .bind(user_id)
         .fetch(&pool);
     while let Some(row) = rows.try_next()
@@ -143,8 +136,24 @@ pub async fn get_posts(cx: Scope, posts_type: PostsType) -> Result<Vec<Post>, Se
         posts.push(row);
     }
 
-    if (posts_type == PostsType::Recommended) {
-        //TODO randomize them or pull from your subscriber's other subscriptions?
+    Ok(posts)
+}
+
+#[server(GetSubscriptionsPosts, "/api")]
+pub async fn get_subscriptions_posts(cx: Scope, user_id: u32) -> Result<Vec<Post>, ServerFnError> {
+    use futures::TryStreamExt;
+    let pool = pool(cx)?;
+    let mut posts = Vec::new();
+    let mut rows = sqlx::query_as::<_, Post>("SELECT p.* FROM posts p
+                                                JOIN user_subscription subscriber ON p.user_id = subscriber.subscription_user_id
+                                                WHERE subscriber.user_id = ?")
+        .bind(user_id)
+        .fetch(&pool);
+    while let Some(row) = rows.try_next()
+        .await
+        .map_err(|e| ServerFnError::ServerError(e.to_string()))? {
+            
+        posts.push(row);
     }
 
     Ok(posts)
@@ -271,7 +280,7 @@ pub fn App(cx: Scope) -> impl IntoView {
                 <Routes>
                     <Route path="" view=|cx| view! {
                         cx,
-                        <Posts posts_type=PostsType::All/>
+                        <AllPosts />
                     }/>
                     <Route path="/u/:username" view=move |cx| view! {
                         cx,
@@ -300,68 +309,70 @@ pub fn App(cx: Scope) -> impl IntoView {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum PostsType {
-    All,
-    User,
-    Subscriptions,
-    Recommended
+#[component]
+pub fn AllPosts(cx: Scope) -> impl IntoView {
+    let posts: Resource<(), Result<Vec<Post>, ServerFnError>> = create_resource(
+        cx,
+        move || (),
+        move |_| get_all_posts(cx),
+    );
+
+    view! {
+        cx,
+        <PostList posts=posts />
+    }
 }
 
 #[component]
-pub fn Posts(cx: Scope, posts_type: PostsType) -> impl IntoView {
-    let posts = create_resource(
+pub fn UserPosts(cx: Scope, id: u32) -> impl IntoView {
+    let posts: Resource<(), Result<Vec<Post>, ServerFnError>> = create_resource(
         cx,
         move || (),
-        move |_| get_posts(cx, posts_type),
+        move |_| get_user_posts(cx, id),
     );
 
+    view! {
+        cx,
+        <PostList posts=posts />
+    }
+}
+
+#[component]
+pub fn PostList(cx: Scope, posts: Resource<(), Result<Vec<Post>, ServerFnError>>) -> impl IntoView {
     view! {
         cx,
         <div>
             <Transition fallback=move || view! {cx, <div/> }>
                 {move || {
-                    match posts_type {
-                        PostsType::All | PostsType::User => view! { cx, 
-                            {move || {
-                                let existing_posts = {
-                                    move || {
-                                        posts.read(cx).map(move |posts| match posts {
-                                            Err(e) => {
-                                                view! { cx, <pre class="error">"Server Error: " {e.to_string()}</pre>}.into_view(cx)
-                                            }
-                                            Ok(posts) => {
-                                                if posts.is_empty() {
-                                                    view! { cx, <p>"No posts found."</p> }.into_view(cx)
-                                                } else {
-                                                    posts
-                                                        .into_iter()
-                                                        .map(move |post| {
-                                                            view! {
-                                                                cx, 
-                                                                <PostCard post=post />
-                                                            }
-                                                        })
-                                                        .collect_view(cx)
-                                                }
-                                            }
-                                        })
-                                        .unwrap_or_default()
-                                    }
-                                };
-
-                                view! {
-                                    cx,
-                                    {existing_posts}
+                    let existing_posts = {
+                        move || {
+                            posts.read(cx).map(move |posts| match posts {
+                                Err(e) => {
+                                    view! { cx, <pre class="error">"Server Error: " {e.to_string()}</pre>}.into_view(cx)
                                 }
-                            }}
-                        }.into_view(cx),
-                        PostsType::Subscriptions => {
-                            view! { cx, <div></div> }.into_view(cx)
-                        },
-                        PostsType::Recommended => {
-                            view! { cx, <div></div> }.into_view(cx)
-                        },
+                                Ok(posts) => {
+                                    if posts.is_empty() {
+                                        view! { cx, <p>"No posts found."</p> }.into_view(cx)
+                                    } else {
+                                        posts
+                                            .into_iter()
+                                            .map(move |post| {
+                                                view! {
+                                                    cx, 
+                                                    <PostCard post=post />
+                                                }
+                                            })
+                                            .collect_view(cx)
+                                    }
+                                }
+                            })
+                            .unwrap_or_default()
+                        }
+                    };
+
+                    view! {
+                        cx,
+                        {existing_posts}
                     }
                 }}
             </Transition>
@@ -594,7 +605,7 @@ pub fn UserProfile(cx: Scope) -> impl IntoView {
                                         <div class="user">
                                             <h1><UserFirstAndLastName id=user.id /></h1>
                                             //TODO make profile picture component and get it here next to their name in flex box
-                                            <Posts posts_type=PostsType::User />
+                                            <UserPosts id=user.id />
                                         </div>
                                     }
                                     .into_view(cx)
