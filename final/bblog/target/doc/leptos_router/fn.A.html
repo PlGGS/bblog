@@ -1,0 +1,58 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="An HTML `a` progressively enhanced to use client-side routing. Client-side routing also works with ordinary HTML `&lt;a&gt;` tags, but `&lt;A&gt;` does two additional things:"><title>A in leptos_router - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../static.files/rustdoc-ba5701c5741a7b69.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="leptos_router" data-themes="" data-resource-suffix="" data-rustdoc-version="1.71.0-nightly (9ecda8de8 2023-04-30)" data-search-js="search-618e954b235f6acc.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-6f6ffb5395b17c6e.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ></div><script src="../static.files/storage-62ce34ea385b278a.js"></script><script defer src="sidebar-items.js"></script><script defer src="../static.files/main-f0540c1d82cde29b.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc fn"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="logo-container" href="../leptos_router/index.html"><img class="rust-logo" src="../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><h2></h2></nav><nav class="sidebar"><a class="logo-container" href="../leptos_router/index.html"><img class="rust-logo" src="../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><div class="sidebar-elems"><h2><a href="index.html">In leptos_router</a></h2></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Function <a href="index.html">leptos_router</a>::<wbr><a class="fn" href="#">A</a><button id="copy-path" title="Copy item path to clipboard"><img src="../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="srclink" href="../src/leptos_router/components/link.rs.html#49">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><code>pub fn A&lt;H&gt;(cx: <a class="struct" href="../leptos_reactive/scope/struct.Scope.html" title="struct leptos_reactive::scope::Scope">Scope</a>, props: <a class="struct" href="struct.AProps.html" title="struct leptos_router::AProps">AProps</a>&lt;H&gt;) -&gt; impl <a class="trait" href="../leptos_dom/trait.IntoView.html" title="trait leptos_dom::IntoView">IntoView</a><span class="where fmt-newline">where
+    H: <a class="trait" href="trait.ToHref.html" title="trait leptos_router::ToHref">ToHref</a> + 'static,</span></code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>An HTML <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a"><code>a</code></a>
+progressively enhanced to use client-side routing.
+Client-side routing also works with ordinary HTML <code>&lt;a&gt;</code> tags, but <code>&lt;A&gt;</code> does two additional things:</p>
+<ol>
+<li>Correctly resolves relative nested routes. Relative routing with ordinary <code>&lt;a&gt;</code> tags can be tricky.
+For example, if you have a route like <code>/post/:id</code>, <code>&lt;A href=&quot;1&quot;&gt;</code> will generate the correct relative
+route, but <code>&lt;a href=&quot;1&quot;&gt;</code> likely will not (depending on where it appears in your view.)</li>
+<li>Sets the <code>aria-current</code> attribute if this link is the active link (i.e., it’s a link to the page you’re on).
+This is helpful for accessibility and for styling. For example, maybe you want to set the link a
+different color if it’s a link to the page you’re currently on.</li>
+</ol>
+<h2 id="required-props"><a href="#required-props">Required Props</a></h2>
+<ul>
+<li><strong>cx</strong>: <a href="../leptos_reactive/scope/struct.Scope.html" title="struct leptos_reactive::scope::Scope"><code>Scope</code></a></li>
+<li><strong>href</strong>: [<code>H</code>]
+<ul>
+<li>Used to calculate the link’s <code>href</code> attribute. Will be resolved relative
+to the current route.</li>
+</ul>
+</li>
+<li><strong>children</strong>: <a href="../leptos/type.Children.html" title="type leptos::Children"><code>Children</code></a>
+<ul>
+<li>The nodes or elements to be shown inside the link.</li>
+</ul>
+</li>
+</ul>
+<h2 id="optional-props"><a href="#optional-props">Optional Props</a></h2>
+<ul>
+<li><strong>exact</strong>: <a href="https://doc.rust-lang.org/nightly/std/primitive.bool.html" title="primitive bool"><code>bool</code></a>
+<ul>
+<li>If <code>true</code>, the link is marked active when the location matches exactly;
+if false, link is marked active if the current route starts with it.</li>
+</ul>
+</li>
+<li><strong>state</strong>: <a href="struct.State.html" title="struct leptos_router::State"><code>State</code></a>
+<ul>
+<li>An object of any type that will be pushed to router state</li>
+</ul>
+</li>
+<li><strong>replace</strong>: <a href="https://doc.rust-lang.org/nightly/std/primitive.bool.html" title="primitive bool"><code>bool</code></a>
+<ul>
+<li>If <code>true</code>, the link will not add to the browser’s history (so, pressing <code>Back</code>
+will skip this page.)</li>
+</ul>
+</li>
+<li><strong>class</strong>: <a href="../leptos/type.AttributeValue.html" title="type leptos::AttributeValue"><code>impl Into&lt;AttributeValue&gt;</code></a>
+<ul>
+<li>Sets the <code>class</code> attribute on the underlying <code>&lt;a&gt;</code> tag, making it easier to style.</li>
+</ul>
+</li>
+<li><strong>id</strong>: <a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html" title="struct alloc::string::String"><code>impl Into&lt;String&gt;</code></a>
+<ul>
+<li>Sets the <code>id</code> attribute on the underlying <code>&lt;a&gt;</code> tag, making it easier to target.</li>
+</ul>
+</li>
+</ul>
+</div></details></section></div></main></body></html>
