@@ -7,22 +7,6 @@ use serde::{Deserialize, Serialize};
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
-        use sqlx::SqlitePool;
-
-        pub const DB_URL: &str = "sqlite://bblog.db";
-
-        pub fn pool(cx: Scope) -> Result<SqlitePool, ServerFnError> {
-        use_context::<SqlitePool>(cx)
-                .ok_or("Pool missing.")
-                .map_err(|e| ServerFnError::ServerError(e.to_string()))
-        }
-
-        pub fn auth(cx: Scope) -> Result<AuthSession, ServerFnError> {
-            use_context::<AuthSession>(cx)
-                .ok_or("Auth session missing.")
-                .map_err(|e| ServerFnError::ServerError(e.to_string()))
-        }
-
         pub fn register_server_functions() {
             _ = GetAllPosts::register();
             _ = GetUserPosts::register();
@@ -90,6 +74,7 @@ cfg_if! {
     }
 }
 
+/// Gets a post entry from the posts table in the database
 #[server(GetPost, "/api")]
 pub async fn get_post(cx: Scope, id: u32) -> Result<Post, ServerFnError> {
     let pool = pool(cx)?;
@@ -103,6 +88,7 @@ pub async fn get_post(cx: Scope, id: u32) -> Result<Post, ServerFnError> {
     Ok(post)
 }
 
+/// Gets all posts entries from the posts table in the database
 #[server(GetAllPosts, "/api")]
 pub async fn get_all_posts(cx: Scope) -> Result<Vec<Post>, ServerFnError> {
     use futures::TryStreamExt;
@@ -121,6 +107,7 @@ pub async fn get_all_posts(cx: Scope) -> Result<Vec<Post>, ServerFnError> {
     Ok(posts)
 }
 
+/// Gets all post entries for a specific user based on their id from the posts table in the database
 #[server(GetUserPosts, "/api")]
 pub async fn get_user_posts(cx: Scope, user_id: u32) -> Result<Vec<Post>, ServerFnError> {
     use futures::TryStreamExt;
@@ -139,6 +126,7 @@ pub async fn get_user_posts(cx: Scope, user_id: u32) -> Result<Vec<Post>, Server
     Ok(posts)
 }
 
+/// Gets all post entries from a specific user's subscriptions based on their id from the posts table in the database
 #[server(GetSubscriptionsPosts, "/api")]
 pub async fn get_subscriptions_posts(cx: Scope, user_id: u32) -> Result<Vec<Post>, ServerFnError> {
     use futures::TryStreamExt;
@@ -159,6 +147,7 @@ pub async fn get_subscriptions_posts(cx: Scope, user_id: u32) -> Result<Vec<Post
     Ok(posts)
 }
 
+/// Gets a specific user based on their id from the users table in the database
 #[server(GetUserFromID, "/api")]
 pub async fn get_user_from_id(cx: Scope, id: u32) -> Result<User, ServerFnError> {
     let pool = pool(cx)?;
@@ -172,6 +161,7 @@ pub async fn get_user_from_id(cx: Scope, id: u32) -> Result<User, ServerFnError>
     Ok(user)
 }
 
+/// Gets a specific user based on their username from the users table in the database
 #[server(GetUserFromUsername, "/api")]
 pub async fn get_user_from_username(cx: Scope, username: String) -> Result<User, ServerFnError> {
     let pool = pool(cx)?;
@@ -185,6 +175,7 @@ pub async fn get_user_from_username(cx: Scope, username: String) -> Result<User,
     Ok(user)
 }
 
+/// Inserts a new post into the posts table in the database with its posted flag set to false, to save it as a draft that only the current user can see
 #[server(NewPostDraft, "/api")]
 pub async fn new_post_draft(cx: Scope, series_id: String, title: String, content: String) -> Result<(), ServerFnError> {
     let user = get_current_user(cx).await?;
@@ -209,6 +200,7 @@ pub async fn new_post_draft(cx: Scope, series_id: String, title: String, content
     }
 }
 
+/// Deletes a post based on its id from the posts table in the database
 #[server(DeletePost, "/api")]
 pub async fn delete_post(cx: Scope, id: u16) -> Result<(), ServerFnError> {
     let pool = pool(cx)?;
@@ -221,6 +213,7 @@ pub async fn delete_post(cx: Scope, id: u16) -> Result<(), ServerFnError> {
         .map_err(|e| ServerFnError::ServerError(e.to_string()))
 }
 
+/// Main app component for rendering all routes
 #[component]
 pub fn App(cx: Scope) -> impl IntoView {
     let login = create_server_action::<Login>(cx);
@@ -309,6 +302,7 @@ pub fn App(cx: Scope) -> impl IntoView {
     }
 }
 
+/// PostList containing every post in the database
 #[component]
 pub fn AllPosts(cx: Scope) -> impl IntoView {
     let posts: Resource<(), Result<Vec<Post>, ServerFnError>> = create_resource(
@@ -319,10 +313,12 @@ pub fn AllPosts(cx: Scope) -> impl IntoView {
 
     view! {
         cx,
+        //TODO only pull so many and add buttons at the bottom to load the next and previous batch of posts
         <PostList posts=posts />
     }
 }
 
+/// PostList containing every post by a specified user based on their id in the database
 #[component]
 pub fn UserPosts(cx: Scope, id: u32) -> impl IntoView {
     let posts: Resource<(), Result<Vec<Post>, ServerFnError>> = create_resource(
@@ -337,6 +333,7 @@ pub fn UserPosts(cx: Scope, id: u32) -> impl IntoView {
     }
 }
 
+/// Generic PostList component for rendering a vector of posts as PostCard components
 #[component]
 pub fn PostList(cx: Scope, posts: Resource<(), Result<Vec<Post>, ServerFnError>>) -> impl IntoView {
     view! {
@@ -371,6 +368,7 @@ pub fn PostList(cx: Scope, posts: Resource<(), Result<Vec<Post>, ServerFnError>>
     }
 }
 
+/// Displays info about a Post alongside a thumbnail to entice a user to read it
 #[component]
 pub fn PostCard(cx: Scope, post: Post) -> impl IntoView {
     let post_route = String::from("/post/") + post.id.to_string().as_str();
@@ -396,6 +394,7 @@ pub fn PostCard(cx: Scope, post: Post) -> impl IntoView {
     }
 }
 
+/// Displays a user's profile picture alongside a link to their profile, most commonly used for displaying authors in PostCard components
 #[component]
 pub fn AuthorLink(cx: Scope, id: u32) -> impl IntoView {
     let user = create_resource(
@@ -432,6 +431,7 @@ pub fn AuthorLink(cx: Scope, id: u32) -> impl IntoView {
     }
 }
 
+/// Displays a user's first and last name based on their id
 #[component]
 pub fn UserFirstAndLastName(cx: Scope, id: u32) -> impl IntoView {
     let user = create_resource(
@@ -458,6 +458,7 @@ pub fn UserFirstAndLastName(cx: Scope, id: u32) -> impl IntoView {
     }
 }
 
+/// Displays a Post based on the post_id in the URL route
 #[component]
 pub fn Post(cx: Scope) -> impl IntoView {
     let params = use_params_map(cx);
@@ -501,6 +502,7 @@ pub fn Post(cx: Scope) -> impl IntoView {
     }
 }
 
+/// Displays a user's first and last name as a link to their profile page
 #[component]
 pub fn UserProfileLink(cx: Scope, id: u32) -> impl IntoView {
     let user = create_resource(
@@ -527,6 +529,7 @@ pub fn UserProfileLink(cx: Scope, id: u32) -> impl IntoView {
     }
 }
 
+/// Displays a user's information alongside their most recent posts
 #[component]
 pub fn UserProfile(cx: Scope) -> impl IntoView {
     let params = use_params_map(cx);
@@ -568,6 +571,7 @@ pub fn UserProfile(cx: Scope) -> impl IntoView {
     }
 }
 
+/// Displays a login page for logging a user into BBlog
 #[component]
 pub fn Login(
     cx: Scope,
@@ -597,6 +601,7 @@ pub fn Login(
     }
 }
 
+/// Displays a login page for creating an account on BBlog
 #[component]
 pub fn Signup(
     cx: Scope,
@@ -641,6 +646,7 @@ pub fn Signup(
     }
 }
 
+/// Displays a logout page for logging a user out of BBlog
 #[component]
 pub fn Logout(
     cx: Scope,

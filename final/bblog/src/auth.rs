@@ -8,10 +8,24 @@ if #[cfg(feature = "ssr")] {
     use sqlx::SqlitePool;
     use axum_session_auth::{SessionSqlitePool, Authentication, HasPermission};
     use bcrypt::{hash, verify, DEFAULT_COST};
-    use crate::app::{pool, auth};
     pub type AuthSession = axum_session_auth::AuthSession<User, i64, SessionSqlitePool, SqlitePool>;
+        
+    /// Gets pool from database
+    pub fn pool(cx: Scope) -> Result<SqlitePool, ServerFnError> {
+    use_context::<SqlitePool>(cx)
+            .ok_or("Pool missing.")
+            .map_err(|e| ServerFnError::ServerError(e.to_string()))
+    }
+
+    /// Gets the current authentication session from the application context variable cx
+    pub fn auth(cx: Scope) -> Result<AuthSession, ServerFnError> {
+        use_context::<AuthSession>(cx)
+            .ok_or("Auth session missing.")
+            .map_err(|e| ServerFnError::ServerError(e.to_string()))
+    }
 }}
 
+/// Current user struct for authentication
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct User {
     pub id: i64,
@@ -22,6 +36,7 @@ pub struct User {
     pub permissions: HashSet<String>,
 }
 
+/// Default guest user struct
 impl Default for User {
     fn default() -> Self {
         let permissions = HashSet::new();
@@ -41,6 +56,7 @@ cfg_if! {
 if #[cfg(feature = "ssr")] {
     use async_trait::async_trait;
 
+    /// Get current user from database by id
     impl User {
         pub async fn get(id: i64, pool: &SqlitePool) -> Option<Self> {
             let sqluser = sqlx::query_as::<_, SqlUser>("SELECT * FROM users WHERE id = ?")
@@ -61,6 +77,7 @@ if #[cfg(feature = "ssr")] {
             Some(sqluser.into_user(Some(sql_user_perms)))
         }
 
+        /// Get current user from database by username
         pub async fn get_from_username(name: String, pool: &SqlitePool) -> Option<Self> {
             let sqluser = sqlx::query_as::<_, SqlUser>("SELECT * FROM users WHERE username = ?")
                 .bind(name)
@@ -88,6 +105,7 @@ if #[cfg(feature = "ssr")] {
 
     #[async_trait]
     impl Authentication<User, i64, SqlitePool> for User {
+        /// Authenticates current user
         async fn load_user(userid: i64, pool: Option<&SqlitePool>) -> Result<User, anyhow::Error> {
             let pool = pool.unwrap();
 
@@ -126,6 +144,7 @@ if #[cfg(feature = "ssr")] {
     }
 
     impl SqlUser {
+        /// Serializes current user with permissions from database
         pub fn into_user(self, sql_user_perms: Option<Vec<SqlPermissionTokens>>) -> User {
             User {
                 id: self.id,

@@ -10,7 +10,6 @@ cfg_if! {
             body::Body as AxumBody,
             Router,
         };
-        use bblog::app::DB_URL;
         use bblog::app::App;
         use bblog::auth::*;
         use bblog::state::AppState;
@@ -20,6 +19,8 @@ cfg_if! {
         use sqlx::{SqlitePool, sqlite::SqlitePoolOptions, migrate::MigrateDatabase, Sqlite};
         use axum_session::{SessionConfig, SessionLayer, SessionStore};
         use axum_session_auth::{AuthSessionLayer, AuthConfig, SessionSqlitePool};
+
+        pub const DB_URL: &str = "sqlite://bblog.db";
 
         async fn server_fn_handler(State(app_state): State<AppState>, auth_session: AuthSession, path: Path<String>, headers: HeaderMap, raw_query: RawQuery, request: Request<AxumBody>) -> impl IntoResponse {
             log!("{:?}", path);
