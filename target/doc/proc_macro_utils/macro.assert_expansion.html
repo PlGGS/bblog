@@ -1,0 +1,132 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Allows simple unit testing of proc macro implementations."><title>assert_expansion in proc_macro_utils - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../static.files/rustdoc-ba5701c5741a7b69.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="proc_macro_utils" data-themes="" data-resource-suffix="" data-rustdoc-version="1.71.0-nightly (9ecda8de8 2023-04-30)" data-search-js="search-618e954b235f6acc.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-6f6ffb5395b17c6e.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ></div><script src="../static.files/storage-62ce34ea385b278a.js"></script><script defer src="sidebar-items.js"></script><script defer src="../static.files/main-f0540c1d82cde29b.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc macro"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="logo-container" href="../proc_macro_utils/index.html"><img class="rust-logo" src="../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><h2></h2></nav><nav class="sidebar"><a class="logo-container" href="../proc_macro_utils/index.html"><img class="rust-logo" src="../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><div class="sidebar-elems"><h2><a href="index.html">In proc_macro_utils</a></h2></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Macro <a href="index.html">proc_macro_utils</a>::<wbr><a class="macro" href="#">assert_expansion</a><button id="copy-path" title="Copy item path to clipboard"><img src="../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="srclink" href="../src/proc_macro_utils/assert.rs.html#151-182">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><pre class="rust item-decl"><span class="macro">macro_rules! </span>assert_expansion {
+    (<span class="macro-nonterminal">$</span><span class="kw">macro</span>:<span class="macro">ident!</span>($(<span class="macro-nonterminal">$input</span>:tt)<span class="kw-2">*</span>)$(.<span class="macro-nonterminal">$</span><span class="kw">fn</span>:<span class="macro-nonterminal">ident</span>())<span class="question-mark">?</span>, { $(<span class="macro-nonterminal">$rhs</span>:tt)* }) =&gt; { ... };
+    (<span class="macro-nonterminal">$</span><span class="kw">macro</span>:<span class="macro">ident!</span>[$(<span class="macro-nonterminal">$input</span>:tt)<span class="kw-2">*</span>]$(.<span class="macro-nonterminal">$</span><span class="kw">fn</span>:<span class="macro-nonterminal">ident</span>())<span class="question-mark">?</span>, { $(<span class="macro-nonterminal">$rhs</span>:tt)* }) =&gt; { ... };
+    (<span class="macro-nonterminal">$</span><span class="kw">macro</span>:<span class="macro">ident!</span>{$(<span class="macro-nonterminal">$input</span>:tt)<span class="kw-2">*</span>}$(.<span class="macro-nonterminal">$</span><span class="kw">fn</span>:<span class="macro-nonterminal">ident</span>())<span class="question-mark">?</span>, { $(<span class="macro-nonterminal">$rhs</span>:tt)* }) =&gt; { ... };
+    (<span class="attr">#[derive(<span class="macro-nonterminal">$</span><span class="kw">macro</span>:<span class="macro-nonterminal">ident</span>)]</span><span class="macro-nonterminal">$item</span>:item$(.<span class="macro-nonterminal">$</span><span class="kw">fn</span>:<span class="macro-nonterminal">ident</span>())<span class="question-mark">?</span>$(,)<span class="question-mark">? </span>{ $(<span class="macro-nonterminal">$rhs</span>:tt)* }) =&gt; { ... };
+    (<span class="attr">#[<span class="macro-nonterminal">$</span><span class="kw">macro</span>:<span class="macro-nonterminal">ident</span>]</span><span class="macro-nonterminal">$item</span>:item$(.<span class="macro-nonterminal">$</span><span class="kw">fn</span>:<span class="macro-nonterminal">ident</span>())<span class="question-mark">?</span>$(,)<span class="question-mark">? </span>{ $(<span class="macro-nonterminal">$rhs</span>:tt)* }) =&gt; { ... };
+    (<span class="attr">#[<span class="macro-nonterminal">$</span><span class="kw">macro</span>:<span class="macro-nonterminal">ident </span>= <span class="macro-nonterminal">$input</span>:expr]</span><span class="macro-nonterminal">$item</span>:item$(.<span class="macro-nonterminal">$</span><span class="kw">fn</span>:<span class="macro-nonterminal">ident</span>())<span class="question-mark">?</span>$(,)<span class="question-mark">? </span>{ $(<span class="macro-nonterminal">$rhs</span>:tt)* }) =&gt; { ... };
+    (<span class="attr">#[<span class="macro-nonterminal">$</span><span class="kw">macro</span>:<span class="macro-nonterminal">ident</span>($(<span class="macro-nonterminal">$input</span>:tt)<span class="kw-2">*</span>)]</span><span class="macro-nonterminal">$item</span>:item$(.<span class="macro-nonterminal">$</span><span class="kw">fn</span>:<span class="macro-nonterminal">ident</span>())<span class="question-mark">?</span>$(,)<span class="question-mark">? </span>{ $(<span class="macro-nonterminal">$rhs</span>:tt)* }) =&gt; { ... };
+    (<span class="macro-nonterminal">$</span><span class="kw">macro</span>:<span class="macro-nonterminal">ident</span>($({$(<span class="macro-nonterminal">$input</span>:tt)<span class="kw-2">*</span>}),+$(,)<span class="question-mark">?</span>)$(.<span class="macro-nonterminal">$</span><span class="kw">fn</span>:<span class="macro-nonterminal">ident</span>())<span class="question-mark">?</span>, {$(<span class="macro-nonterminal">$rhs</span>:tt)<span class="kw-2">*</span>}) =&gt; { ... };
+}</pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Allows simple unit testing of proc macro implementations.</p>
+<p>This macro only works with functions taking <a href="../proc_macro2/struct.TokenStream.html" title="struct proc_macro2::TokenStream"><code>proc_macro2::TokenStream</code></a> due
+to the <a href="https://doc.rust-lang.org/nightly/proc_macro/index.html" title="mod proc_macro"><code>proc_macro</code></a> api not being available in unit tests. This can be
+achieved either by manually creating a seperate function:</p>
+
+<div class="example-wrap ignore"><a href="#" class="tooltip" title="This example is not tested">ⓘ</a><pre class="rust rust-example-rendered"><code><span class="kw">use </span>proc_macro::TokenStream;
+<span class="kw">use </span>proc_macro2::TokenStream <span class="kw">as </span>TokenStream2;
+<span class="attr">#[proc_macro]
+</span><span class="kw">pub fn </span>actual_macro(input: TokenStream) -&gt; TokenStream {
+    macro_impl(input.into()).into()
+}
+<span class="kw">fn </span>macro_impl(input: TokenStream2) -&gt; TokenStream2 {
+    <span class="comment">// ...
+</span>}</code></pre></div>
+<p>or use a crate like <a href="https://docs.rs/manyhow/"><code>manyhow</code></a>:</p>
+
+<div class="example-wrap ignore"><a href="#" class="tooltip" title="This example is not tested">ⓘ</a><pre class="rust rust-example-rendered"><code><span class="kw">use </span>proc_macro2::TokenStream <span class="kw">as </span>TokenStream2;
+<span class="attr">#[manyhow(impl_fn)] </span><span class="comment">// generates `fn actual_macro_impl`
+</span><span class="kw">pub fn </span>actual_macro(input: TokenStream2) -&gt; TokenStream2 {
+    <span class="comment">// ...
+</span>}</code></pre></div>
+<h2 id="function-like-macros"><a href="#function-like-macros">Function like macros</a></h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="comment">// Dummy attribute macro impl
+</span><span class="kw">fn </span>macro_impl(input: TokenStream) -&gt; TokenStream {
+    <span class="macro">quote!</span>(#input)
+}
+<span class="kw">fn </span>macro_impl_result(input: TokenStream) -&gt; <span class="prelude-ty">Result</span>&lt;TokenStream, ()&gt; {
+    <span class="prelude-val">Ok</span>(<span class="macro">quote!</span>(#input))
+}
+<span class="macro">assert_expansion!</span>(
+    <span class="macro">macro_impl!</span>(something test),
+    { something test }
+);
+<span class="macro">assert_expansion!</span>(
+    <span class="macro">macro_impl!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>],
+    { <span class="number">1</span>, <span class="number">2</span>, <span class="number">3 </span>}
+);
+<span class="macro">assert_expansion!</span>(
+    <span class="macro">macro_impl!</span>{ braced },
+    { braced }
+);
+<span class="comment">// adding a single function call (without arguments) is also allowed e.g. `unwrap()`
+</span><span class="macro">assert_expansion!</span>(
+    <span class="macro">macro_impl_result!</span>(result).unwrap(),
+    { result }
+);</code></pre></div>
+<h2 id="derive-macros"><a href="#derive-macros">Derive macros</a></h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="comment">// Dummy derive macro impl
+</span><span class="kw">fn </span>macro_impl(item: TokenStream) -&gt; TokenStream {
+    <span class="macro">quote!</span>(#item)
+}
+<span class="kw">fn </span>macro_impl_result(item: TokenStream) -&gt; <span class="prelude-ty">Result</span>&lt;TokenStream, ()&gt; {
+    <span class="prelude-val">Ok</span>(<span class="macro">quote!</span>(#item))
+}
+<span class="macro">assert_expansion!</span>(
+    <span class="attr">#[derive(macro_impl)]
+    </span><span class="kw">struct </span>A; <span class="comment">// the comma after items is optional
+    </span>{ <span class="kw">struct </span>A; }
+);
+<span class="macro">assert_expansion!</span>(
+    <span class="attr">#[derive(macro_impl)]
+    </span><span class="kw">struct </span>A {}
+    { <span class="kw">struct </span>A {} }
+);
+<span class="comment">// adding a single function call (without arguments) is also allowed e.g. `unwrap()`
+</span><span class="macro">assert_expansion!</span>(
+    <span class="attr">#[derive(macro_impl_result)]
+    </span><span class="kw">struct </span>A {}.unwrap()
+    { <span class="kw">struct </span>A {} }
+);
+<span class="comment">// alternatively the proc_macro syntax is compatible
+</span><span class="macro">assert_expansion!</span>(
+    <span class="macro">macro_impl!</span>{ <span class="kw">struct </span>A {} },
+    { <span class="kw">struct </span>A {} }
+);</code></pre></div>
+<h2 id="attribute-macros"><a href="#attribute-macros">Attribute macros</a></h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="comment">// Dummy attribute macro impl
+</span><span class="kw">fn </span>macro_impl(input: TokenStream, item: TokenStream) -&gt; TokenStream {
+    <span class="macro">quote!</span>(#input, #item)
+}
+<span class="kw">fn </span>macro_impl_result(input: TokenStream, item: TokenStream) -&gt; <span class="prelude-ty">Result</span>&lt;TokenStream, ()&gt; {
+    <span class="prelude-val">Ok</span>(<span class="macro">quote!</span>(#input, #item))
+}
+<span class="macro">assert_expansion!</span>(
+    <span class="attr">#[macro_impl]
+    </span><span class="kw">struct </span>A;
+    { , <span class="kw">struct </span>A; }
+);
+<span class="macro">assert_expansion!</span>(
+    <span class="attr">#[macro_impl = <span class="string">&quot;hello&quot;</span>]
+    </span><span class="kw">fn </span>test() { }, <span class="comment">// the comma after items is optional
+    </span>{ <span class="string">&quot;hello&quot;</span>, <span class="kw">fn </span>test() {} }
+);
+<span class="macro">assert_expansion!</span>(
+    <span class="attr">#[macro_impl(a = <span class="number">10</span>)]
+    </span><span class="kw">impl </span>Hello <span class="kw">for </span>World {},
+    { a = <span class="number">10</span>, <span class="kw">impl </span>Hello <span class="kw">for </span>World {} }
+);
+<span class="comment">// adding a single function call (without arguments) is also allowed e.g. `unwrap()`
+</span><span class="macro">assert_expansion!</span>(
+    <span class="attr">#[macro_impl_result(a = <span class="number">10</span>)]
+    </span><span class="kw">impl </span>Hello <span class="kw">for </span>World {}.unwrap(),
+    { a = <span class="number">10</span>, <span class="kw">impl </span>Hello <span class="kw">for </span>World {} }
+);</code></pre></div>
+<h2 id="generic-usage"><a href="#generic-usage">Generic usage</a></h2>
+<p>On top of the normal macro inputs a generic input is also supported.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">fn </span>macro_impl(first: TokenStream, second: TokenStream, third: TokenStream) -&gt; TokenStream {
+    <span class="macro">quote!</span>(#first, #second, #third)
+}
+<span class="kw">fn </span>macro_impl_result(first: TokenStream, second: TokenStream, third: TokenStream) -&gt; <span class="prelude-ty">Result</span>&lt;TokenStream, ()&gt; {
+    <span class="prelude-val">Ok</span>(<span class="macro">quote!</span>(#first, #second, #third))
+}
+<span class="macro">assert_expansion!</span>(
+    macro_impl({ <span class="number">1 </span>}, { something }, { <span class="string">&quot;:)&quot; </span>}),
+    { <span class="number">1</span>, something, <span class="string">&quot;:)&quot; </span>}
+);
+<span class="comment">// adding a single function call (without arguments) is also allowed e.g. `unwrap()`
+</span><span class="macro">assert_expansion!</span>(
+    macro_impl_result({ <span class="number">1 </span>}, { something }, { <span class="string">&quot;:)&quot; </span>}).unwrap(),
+    { <span class="number">1</span>, something, <span class="string">&quot;:)&quot; </span>}
+);</code></pre></div>
+</div></details></section></div></main></body></html>

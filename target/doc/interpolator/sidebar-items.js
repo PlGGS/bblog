@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Error","ParseError","Trait"],"fn":["format","write"],"macro":["context","ieprint","ieprintln","iformat","iprint","iprintln","iwrite","iwriteln","list"],"struct":["Formattable"],"trait":["Context"]};
