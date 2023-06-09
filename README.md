@@ -1,6 +1,6 @@
 # BBlog: A full stack blog app in Rust by Blake Boris
 
-#### [Documentation](./target/doc/bblog/index.html)
+#### [Documentation](https://bblog.blakeboris.com/target/doc/bblog/index.html)
 
 <!-- #### [Demo](https://www.youtube.com/watch?v=?) -->
 
