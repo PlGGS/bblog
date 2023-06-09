@@ -13,12 +13,12 @@ rand = { version = "0.8.5", features = ["min_const_gen"], optional = true }
 console_error_panic_hook = "0.1.7"
 futures = "0.3.28"
 cfg-if = "1.0.0"
-leptos = { git="https://github.com/leptos-rs/leptos", default-features = false, features = [
+leptos = { git="https://github.com/leptos-rs/leptos", rev = "abf90358fa60de0334077da5f38fc3cff0494916", default-features = false, features = [
 	"serde", "tracing",
 ] }
-leptos_meta = { git="https://github.com/leptos-rs/leptos", default-features = false }
-leptos_axum = { git="https://github.com/leptos-rs/leptos", optional = true }
-leptos_router = {  git="https://github.com/leptos-rs/leptos", default-features = false }
+leptos_meta = { git="https://github.com/leptos-rs/leptos", rev = "abf90358fa60de0334077da5f38fc3cff0494916", default-features = false }
+leptos_axum = { git="https://github.com/leptos-rs/leptos", rev = "abf90358fa60de0334077da5f38fc3cff0494916", optional = true }
+leptos_router = {  git="https://github.com/leptos-rs/leptos", rev = "abf90358fa60de0334077da5f38fc3cff0494916", default-features = false }
 log = "0.4.17"
 simple_logger = "4.0.0"
 serde = { version = "1.0.152", features = ["derive"] }

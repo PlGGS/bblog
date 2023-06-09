@@ -1324,7 +1324,7 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 [[package]]
 name = "leptos"
 version = "0.3.0"
-source = "git+https://github.com/leptos-rs/leptos#3d75c71bfabc229ced6b22b862f65467977307e8"
+source = "git+https://github.com/leptos-rs/leptos?rev=abf90358fa60de0334077da5f38fc3cff0494916#abf90358fa60de0334077da5f38fc3cff0494916"
 dependencies = [
  "cfg-if",
  "leptos_config",
@@ -1340,7 +1340,7 @@ dependencies = [
 [[package]]
 name = "leptos_axum"
 version = "0.3.0"
-source = "git+https://github.com/leptos-rs/leptos#3d75c71bfabc229ced6b22b862f65467977307e8"
+source = "git+https://github.com/leptos-rs/leptos?rev=abf90358fa60de0334077da5f38fc3cff0494916#abf90358fa60de0334077da5f38fc3cff0494916"
 dependencies = [
  "axum",
  "futures",
@@ -1361,7 +1361,7 @@ dependencies = [
 [[package]]
 name = "leptos_config"
 version = "0.3.0"
-source = "git+https://github.com/leptos-rs/leptos#3d75c71bfabc229ced6b22b862f65467977307e8"
+source = "git+https://github.com/leptos-rs/leptos?rev=abf90358fa60de0334077da5f38fc3cff0494916#abf90358fa60de0334077da5f38fc3cff0494916"
 dependencies = [
  "config",
  "regex",
@@ -1373,7 +1373,7 @@ dependencies = [
 [[package]]
 name = "leptos_dom"
 version = "0.3.0"
-source = "git+https://github.com/leptos-rs/leptos#3d75c71bfabc229ced6b22b862f65467977307e8"
+source = "git+https://github.com/leptos-rs/leptos?rev=abf90358fa60de0334077da5f38fc3cff0494916#abf90358fa60de0334077da5f38fc3cff0494916"
 dependencies = [
  "async-recursion",
  "cfg-if",
@@ -1400,7 +1400,7 @@ dependencies = [
 [[package]]
 name = "leptos_hot_reload"
 version = "0.3.0"
-source = "git+https://github.com/leptos-rs/leptos#3d75c71bfabc229ced6b22b862f65467977307e8"
+source = "git+https://github.com/leptos-rs/leptos?rev=abf90358fa60de0334077da5f38fc3cff0494916#abf90358fa60de0334077da5f38fc3cff0494916"
 dependencies = [
  "anyhow",
  "camino",
@@ -1417,7 +1417,7 @@ dependencies = [
 [[package]]
 name = "leptos_integration_utils"
 version = "0.3.0"
-source = "git+https://github.com/leptos-rs/leptos#3d75c71bfabc229ced6b22b862f65467977307e8"
+source = "git+https://github.com/leptos-rs/leptos?rev=abf90358fa60de0334077da5f38fc3cff0494916#abf90358fa60de0334077da5f38fc3cff0494916"
 dependencies = [
  "futures",
  "leptos",
@@ -1430,7 +1430,7 @@ dependencies = [
 [[package]]
 name = "leptos_macro"
 version = "0.3.0"
-source = "git+https://github.com/leptos-rs/leptos#3d75c71bfabc229ced6b22b862f65467977307e8"
+source = "git+https://github.com/leptos-rs/leptos?rev=abf90358fa60de0334077da5f38fc3cff0494916#abf90358fa60de0334077da5f38fc3cff0494916"
 dependencies = [
  "attribute-derive",
  "cfg-if",
@@ -1452,7 +1452,7 @@ dependencies = [
 [[package]]
 name = "leptos_meta"
 version = "0.3.0"
-source = "git+https://github.com/leptos-rs/leptos#3d75c71bfabc229ced6b22b862f65467977307e8"
+source = "git+https://github.com/leptos-rs/leptos?rev=abf90358fa60de0334077da5f38fc3cff0494916#abf90358fa60de0334077da5f38fc3cff0494916"
 dependencies = [
  "cfg-if",
  "indexmap",
@@ -1465,7 +1465,7 @@ dependencies = [
 [[package]]
 name = "leptos_reactive"
 version = "0.3.0"
-source = "git+https://github.com/leptos-rs/leptos#3d75c71bfabc229ced6b22b862f65467977307e8"
+source = "git+https://github.com/leptos-rs/leptos?rev=abf90358fa60de0334077da5f38fc3cff0494916#abf90358fa60de0334077da5f38fc3cff0494916"
 dependencies = [
  "base64 0.21.2",
  "cfg-if",
@@ -1489,7 +1489,7 @@ dependencies = [
 [[package]]
 name = "leptos_router"
 version = "0.3.0"
-source = "git+https://github.com/leptos-rs/leptos#3d75c71bfabc229ced6b22b862f65467977307e8"
+source = "git+https://github.com/leptos-rs/leptos?rev=abf90358fa60de0334077da5f38fc3cff0494916#abf90358fa60de0334077da5f38fc3cff0494916"
 dependencies = [
  "cached",
  "cfg-if",
@@ -1517,7 +1517,7 @@ dependencies = [
 [[package]]
 name = "leptos_server"
 version = "0.3.0"
-source = "git+https://github.com/leptos-rs/leptos#3d75c71bfabc229ced6b22b862f65467977307e8"
+source = "git+https://github.com/leptos-rs/leptos?rev=abf90358fa60de0334077da5f38fc3cff0494916#abf90358fa60de0334077da5f38fc3cff0494916"
 dependencies = [
  "lazy_static",
  "leptos_reactive",
@@ -2313,7 +2313,7 @@ dependencies = [
 [[package]]
 name = "server_fn"
 version = "0.3.0"
-source = "git+https://github.com/leptos-rs/leptos#3d75c71bfabc229ced6b22b862f65467977307e8"
+source = "git+https://github.com/leptos-rs/leptos?rev=abf90358fa60de0334077da5f38fc3cff0494916#abf90358fa60de0334077da5f38fc3cff0494916"
 dependencies = [
  "ciborium",
  "const_format",
@@ -2335,7 +2335,7 @@ dependencies = [
 [[package]]
 name = "server_fn_macro"
 version = "0.3.0"
-source = "git+https://github.com/leptos-rs/leptos#3d75c71bfabc229ced6b22b862f65467977307e8"
+source = "git+https://github.com/leptos-rs/leptos?rev=abf90358fa60de0334077da5f38fc3cff0494916#abf90358fa60de0334077da5f38fc3cff0494916"
 dependencies = [
  "const_format",
  "proc-macro-error",
@@ -2349,7 +2349,7 @@ dependencies = [
 [[package]]
 name = "server_fn_macro_default"
 version = "0.3.0"
-source = "git+https://github.com/leptos-rs/leptos#3d75c71bfabc229ced6b22b862f65467977307e8"
+source = "git+https://github.com/leptos-rs/leptos?rev=abf90358fa60de0334077da5f38fc3cff0494916#abf90358fa60de0334077da5f38fc3cff0494916"
 dependencies = [
  "server_fn_macro",
  "syn 2.0.18",
