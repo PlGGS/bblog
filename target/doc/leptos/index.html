@@ -182,7 +182,9 @@ inner type.</div></li><li><div class="item-name"><a class="trait" href="trait.Si
 without creating a dependency on the signal.</div></li></ul><h2 id="functions" class="small-section-header"><a href="#functions">Functions</a></h2><ul class="item-table"><li><div class="item-name"><a class="fn" href="fn.Await.html" title="fn leptos::Await">Await</a></div><div class="desc docblock-short">Allows you to inline the data loading for an <code>async</code> block or
 server function directly into your view. This is the equivalent of combining a
 <a href="fn.create_resource.html" title="fn leptos::create_resource"><code>create_resource</code></a> that only loads once (i.e., with a source signal <code>|| ()</code>) with
-a <a href="fn.Suspense.html" title="fn leptos::Suspense"><code>Suspense</code></a> with no <code>fallback</code>.</div></li><li><div class="item-name"><a class="fn" href="fn.ErrorBoundary.html" title="fn leptos::ErrorBoundary">ErrorBoundary</a></div><div class="desc docblock-short">When you render a <code>Result&lt;_, _&gt;</code> in your view, in the <code>Err</code> case it will
+a <a href="fn.Suspense.html" title="fn leptos::Suspense"><code>Suspense</code></a> with no <code>fallback</code>.
+Adding <code>bind:{variable name}</code> to the props makes the data available in the children
+that variable name, when resolved.</div></li><li><div class="item-name"><a class="fn" href="fn.ErrorBoundary.html" title="fn leptos::ErrorBoundary">ErrorBoundary</a></div><div class="desc docblock-short">When you render a <code>Result&lt;_, _&gt;</code> in your view, in the <code>Err</code> case it will
 render nothing, and search up through the view tree for an <code>&lt;ErrorBoundary/&gt;</code>.
 This component lets you define a fallback that should be rendered in that
 error case, allowing you to handle errors within a section of the interface.</div></li><li><div class="item-name"><a class="fn" href="fn.For.html" title="fn leptos::For">For</a></div><div class="desc docblock-short">Iterates over children and displays them, keyed by the <code>key</code> function given.
