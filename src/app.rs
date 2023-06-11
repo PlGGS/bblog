@@ -8,12 +8,15 @@ use serde::{Deserialize, Serialize};
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         pub fn register_server_functions() {
+            _ = GetPost::register();
+            _ = GetAllUserSeries::register();
+            _ = GetUserSeriesFromName::register();
             _ = GetAllPosts::register();
             _ = GetUserPosts::register();
-            _ = GetPost::register();
             _ = GetUserFromID::register();
             _ = GetUserFromUsername::register();
             _ = NewPostDraft::register();
+            _ = NewSeries::register();
             _ = DeletePost::register();
             _ = Login::register();
             _ = Logout::register();
@@ -33,6 +36,15 @@ cfg_if! {
             updated_at: String,
             draft_saved: bool,
             posted: bool
+        }
+
+        #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, sqlx::FromRow)]
+        pub struct Series {
+            id: u32,
+            user_id: u32,
+            name: String,
+            created_at: String,
+            updated_at: String,
         }
 
         #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, sqlx::FromRow)]
@@ -62,6 +74,15 @@ cfg_if! {
         }
 
         #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+        pub struct Series {
+            id: u32,
+            user_id: u32,
+            name: String,
+            created_at: String,
+            updated_at: String,
+        }
+
+        #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
         pub struct User {
             id: u32,
             first_name: String,
@@ -86,6 +107,26 @@ pub async fn get_post(cx: Scope, id: u32) -> Result<Post, ServerFnError> {
                 .map_err(|e| ServerFnError::ServerError(e.to_string()))?;
     
     Ok(post)
+}
+
+/// Gets all series entries for a specific user based on their id from the series table in the database
+#[server(GetAllUserSeries, "/api")]
+pub async fn get_all_user_series(cx: Scope, user_id: String) -> Result<Vec<Series>, ServerFnError> {
+    use futures::TryStreamExt;
+    let pool = pool(cx)?;
+    let mut series = Vec::new();
+    
+    let mut rows = sqlx::query_as::<_, Series>("SELECT * FROM series WHERE user_id = ?")
+        .bind(user_id)
+        .fetch(&pool);
+    while let Some(row) = rows.try_next()
+        .await
+        .map_err(|e| ServerFnError::ServerError(e.to_string()))? {
+            
+        series.push(row);
+    }
+
+    Ok(series)
 }
 
 /// Gets all posts entries from the posts table in the database
@@ -153,10 +194,10 @@ pub async fn get_user_from_id(cx: Scope, id: u32) -> Result<User, ServerFnError>
     let pool = pool(cx)?;
 
     let user = sqlx::query_as::<_, User>("SELECT * FROM users WHERE id = ?")
-                .bind(id)
-                .fetch_one(&pool)
-                .await
-                .map_err(|e| ServerFnError::ServerError(e.to_string()))?;
+        .bind(id)
+        .fetch_one(&pool)
+        .await
+        .map_err(|e| ServerFnError::ServerError(e.to_string()))?;
     
     Ok(user)
 }
@@ -167,35 +208,140 @@ pub async fn get_user_from_username(cx: Scope, username: String) -> Result<User,
     let pool = pool(cx)?;
 
     let user = sqlx::query_as::<_, User>("SELECT * FROM users WHERE username = ?")
-                .bind(username)
-                .fetch_one(&pool)
-                .await
-                .map_err(|e| ServerFnError::ServerError(e.to_string()))?;
+        .bind(username)
+        .fetch_one(&pool)
+        .await
+        .map_err(|e| ServerFnError::ServerError(e.to_string()))?;
     
     Ok(user)
 }
 
+/// Gets a series for a specific user based on their username from the series table in the database
+#[server(GetUserSeriesFromName, "/api")]
+pub async fn get_user_series_from_name(cx: Scope, user_id: u32, series_name: String) -> Result<Series, ServerFnError> {
+    let pool = pool(cx)?;
+
+    dbg!(series_name.clone());
+
+    let series = sqlx::query_as::<_, Series>("SELECT * FROM series WHERE user_id = ? AND name = ?")
+        .bind(format!("{}", user_id).to_string())
+        .bind(series_name)
+        .fetch_one(&pool)
+        .await
+        .map_err(|e| ServerFnError::ServerError(e.to_string()))?;
+    
+    Ok(series)
+}
+
 /// Inserts a new post into the posts table in the database with its posted flag set to false, to save it as a draft that only the current user can see
 #[server(NewPostDraft, "/api")]
-pub async fn new_post_draft(cx: Scope, series_id: String, title: String, content: String) -> Result<(), ServerFnError> {
+pub async fn new_post_draft(cx: Scope, series_name: String, title: String, tagline: String, content: String) -> Result<(), ServerFnError> {
     let user = get_current_user(cx).await?;
     let pool = pool(cx)?;
 
     let user_id = match user {
         Some(user) => user.id,
-        None => -1, //TODO maybe handle this differently in the future
+        None => 1, //1 is guest
+    };
+
+    let series_name_copy: String = series_name.clone();
+
+    let series = create_resource(
+        cx,
+        move || (),
+        move |_| get_user_series_from_name(cx, user_id.clone(), series_name.clone()),
+    );
+
+    // println!("SERIES: ");
+    // dbg!(series.clone());
+
+    let series_id = series.read(cx).map(|series| match series {
+        Err(_e) => None,
+        Ok(series) => {
+            println!("SINGLE SERIES: ");
+            dbg!(series.clone());
+
+            Some(series.id)
+        }
+    });
+
+    // println!("SERIES ID: ");
+    // dbg!(series_id.clone());
+
+    // println!("USER ID: ");
+    // dbg!(user_id.clone());
+
+    // print!("inserting into posts");
+
+    if series_id == None {
+        //TODO automatically create new series
+        let series_id = new_series(cx, series_name_copy).await?;
+
+        println!("SERIES ID: ");
+        dbg!(series_id.clone());
+
+        match sqlx::query(
+            "INSERT INTO posts (user_id, series_id, title, tagline, content, draft_saved, posted) 
+            VALUES (?, ?, ?, ?, ?, 1, 0)",
+        )
+            .bind(user_id)
+            .bind(series_id)
+            .bind(title)
+            .bind(tagline)
+            .bind(content)
+            .execute(&pool)
+            .await
+        {
+            Ok(result) => {
+                leptos_axum::redirect(cx, format!("/post/{}", result.last_insert_rowid()).as_str());
+                Ok(())
+            },
+            Err(e) => Err(ServerFnError::ServerError(e.to_string())),
+        }
+    }
+    else {
+        match sqlx::query(
+            "INSERT INTO posts (user_id, series_id, title, tagline, content, draft_saved, posted) 
+            VALUES (?, ?, ?, ?, ?, 1, 0)",
+        )
+            .bind(user_id)
+            .bind(series_id)
+            .bind(title)
+            .bind(tagline)
+            .bind(content)
+            .execute(&pool)
+            .await
+        {
+            Ok(result) => {
+                leptos_axum::redirect(cx, format!("/post/{}", result.last_insert_rowid()).as_str());
+                Ok(())
+            },
+            Err(e) => Err(ServerFnError::ServerError(e.to_string())),
+        }
+    }
+}
+
+/// Inserts a new series into the series table in the database
+#[server(NewSeries, "/api")]
+pub async fn new_series(cx: Scope, name: String) -> Result<u32, ServerFnError> {
+    let user = get_current_user(cx).await?;
+    let pool = pool(cx)?;
+
+    let user_id = match user {
+        Some(user) => user.id,
+        None => 1, //1 is guest
     };
 
     match sqlx::query
-    ("INSERT INTO posts (user_id, series_id, title, content, draft_saved, posted) 
-          VALUES (?, ?, ?, ?, 1, 0)")
+    ("INSERT INTO series (user_id, name) 
+          VALUES (?, ?)")
         .bind(user_id)
-        .bind(series_id)
-        .bind(title)
-        .bind(content)
+        .bind(name)
         .execute(&pool)
         .await {
-        Ok(_row) => Ok(()),
+        Ok(result) => {
+            Ok(result.last_insert_rowid() as u32)
+        },
         Err(e) => Err(ServerFnError::ServerError(e.to_string())),
     }
 }
@@ -219,6 +365,7 @@ pub fn App(cx: Scope) -> impl IntoView {
     let login = create_server_action::<Login>(cx);
     let logout = create_server_action::<Logout>(cx);
     let signup = create_server_action::<Signup>(cx);
+    let newPostDraft = create_server_action::<NewPostDraft>(cx);
 
     let current_user = create_resource(
         cx,
@@ -226,6 +373,7 @@ pub fn App(cx: Scope) -> impl IntoView {
             login.version().get(),
             signup.version().get(),
             logout.version().get(),
+            newPostDraft.version().get()
         )},
         move |_| get_current_user(cx),
     );
@@ -240,30 +388,29 @@ pub fn App(cx: Scope) -> impl IntoView {
                 <div class="top-bar">
                     <A href="/"><h1 class="left-align">"BBlog"</h1></A>
                     <nav>
-                        <Transition
-                            fallback=move || view! {cx, <span>"Loading..."</span>}
-                        >
-                        {move || {
-                            current_user.read(cx).map(|user| match user {
-                                Err(e) => view! {cx,
-                                    <A href="/signup"><p>"Signup"</p></A>
-                                    <A href="/login"><p>"Login"</p></A>
-                                    <span>{format!("Login error: {}", e.to_string())}</span>
-                                }.into_view(cx),
-                                Ok(None) => view! {cx,
-                                    <A href="/signup"><p>"Signup"</p></A>
-                                    <A href="/login"><p>"Login"</p></A>
-                                }.into_view(cx),
-                                Ok(Some(user)) => view! {cx,
-                                    <A href="/settings">"Settings"</A>
-                                    <div class="circle">
-                                        <A href=format!("/u/{}", user.username)>
-                                            <img src="/profile-img.jpg" alt="profile-img"/>
-                                        </A>
-                                    </div>
-                                }.into_view(cx)
-                            })
-                        }}
+                        <Transition fallback=move || view! {cx, <span>"Loading..."</span>}>
+                            {move || {
+                                current_user.read(cx).map(|user| match user {
+                                    Err(e) => view! {cx,
+                                        <A href="/signup"><p>"Signup"</p></A>
+                                        <A href="/login"><p>"Login"</p></A>
+                                        <span>{format!("Login error: {}", e.to_string())}</span>
+                                    }.into_view(cx),
+                                    Ok(None) => view! {cx,
+                                        <A href="/signup"><p>"Signup"</p></A>
+                                        <A href="/login"><p>"Login"</p></A>
+                                    }.into_view(cx),
+                                    Ok(Some(user)) => view! {cx,
+                                        <A href="/draft"><p>"New Post"</p></A>
+                                        <A href="/settings">"Settings"</A>
+                                        <div class="circle">
+                                            <A href=format!("/u/{}", user.username)>
+                                                <img src="/profile-img.jpg" alt="profile-img"/>
+                                            </A>
+                                        </div>
+                                    }.into_view(cx)
+                                })
+                            }}
                         </Transition>
                     </nav>
                 </div>
@@ -279,9 +426,17 @@ pub fn App(cx: Scope) -> impl IntoView {
                         cx,
                         <UserProfile />
                     }/>
+                    <Route path="/series/not_found" view=move |cx| view! {
+                        cx,
+                        <h1>"Series not found..."</h1>
+                    }/>
+                    // <Route path="/series/:series_id" view=move |cx| view! {
+                    //     cx,
+                    //     <Series />
+                    // }/>
                     <Route path="/post/:post_id" view=move |cx| view! {
                         cx,
-                        <Post/>
+                        <Post />
                     }/>
                     <Route path="/signup" view=move |cx| view! {
                         cx,
@@ -295,6 +450,24 @@ pub fn App(cx: Scope) -> impl IntoView {
                         cx,
                         <h1>"Settings"</h1>
                         <Logout action=logout />
+                    }/>
+                    <Route path="/draft" view=move |cx| view! {
+                        cx,
+                        <Transition fallback=move || view! {cx, <span>"Loading..."</span>}>
+                            {move || {
+                                current_user.read(cx).map(|user| match user {
+                                    Err(e) => view! {cx,
+                                        <span>{format!("User not logged in: {}", e.to_string())}</span>
+                                    }.into_view(cx),
+                                    Ok(None) => view! {cx,
+                                        <span>"User not logged in..."</span>
+                                    }.into_view(cx),
+                                    Ok(Some(user)) => view! {cx,
+                                        <NewPost user=user post_action=newPostDraft />
+                                    }.into_view(cx)
+                                })
+                            }}
+                        </Transition>
                     }/>
                 </Routes>
             </main>
@@ -568,6 +741,108 @@ pub fn UserProfile(cx: Scope) -> impl IntoView {
                 }}
             </Transition>
         </div>
+    }
+}
+
+/// Displays a dropdown picker of user's series alongside an input and button for a specified User by id
+#[component]
+pub fn UserSeriesDropDown(cx: Scope, user_id: u32) -> impl IntoView {
+    let allSeries = create_resource(
+        cx,
+        move || (),
+        move |_| get_all_user_series(cx, format!("{}", user_id))
+    );
+    
+    view! {
+        cx,
+        <div>
+            <Transition fallback=move || view! {cx, {} }>
+                <select name="series_name">
+                {move || {
+                    allSeries.read(cx)
+                    .map(move |allSeries| match allSeries {
+                        Err(e) => {
+                            view! { cx, <pre class="error">"Server Error: " {e.to_string()}</pre>}.into_view(cx)
+                        }
+                        Ok(allSeries) => {
+                            if allSeries.is_empty() {
+                                view! { cx, 
+                                    {}
+                                }.into_view(cx)
+                            } else {
+                                allSeries
+                                    .into_iter()
+                                    .map(move |series| {
+                                        view! {
+                                            cx, 
+                                            <option value=series.name.clone() /*name="series_name"*/>{series.name}</option>
+                                        }
+                                    })
+                                    .collect_view(cx)
+                            }
+                        }
+                    }).unwrap_or_default()
+                }}
+                </select>
+            </Transition>
+        </div>
+    }
+}
+
+/// Provides the user with input fields to make a new Post of their own
+#[component]
+pub fn NewPost(
+    cx: Scope,
+    user: crate::auth::User,
+    post_action: Action<NewPostDraft, Result<(), ServerFnError>>,
+) -> impl IntoView {
+    view! {
+        cx,
+        <h1>"New Post"</h1>
+        <ActionForm action=post_action>
+            <UserSeriesDropDown user_id=user.id />
+            <label>
+                "Series: "
+                <input type="text" placeholder="Post series" maxlength="64" name="series_name" class="auth-input" />
+            </label>
+            <br/>
+            <label>
+                "Title: "
+                <input type="text" placeholder="Post title" maxlength="64" name="title" class="auth-input" />
+            </label>
+            <br/>
+            <label>
+                "Tagline: "
+                <input type="text" placeholder="Catchy tagline" maxlength="256" name="tagline" class="auth-input" />
+            </label>
+            <br/>
+            <label>
+                "Content: "
+                <input type="text" placeholder="Post content" maxlength="32" name="content" class="auth-input" />
+            </label>
+            <br/>
+            <br/>
+            <button type="submit" class="button">"Save Draft"</button>
+        </ActionForm>
+    }
+}
+
+/// Provides the user with input fields to make a new Series of their own
+#[component]
+pub fn NewSeries(
+    cx: Scope,
+    action: Action<NewSeries, Result<(), ServerFnError>>,
+) -> impl IntoView {
+    
+    view! {
+        cx,
+        <ActionForm action=action>
+            <label>
+                "New Series: "
+                <input type="text" placeholder="Name" maxlength="64" name="name" class="auth-input" />
+                // <button type="submit" class="button">"Create new series"</button>
+            </label>
+        </ActionForm>
     }
 }
 

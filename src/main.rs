@@ -62,7 +62,7 @@ cfg_if! {
                 .expect("Could not make pool.");
 
             let session_config = SessionConfig::default().with_table_name("axum_sessions");
-            let auth_config = AuthConfig::<i64>::default();
+            let auth_config = AuthConfig::<u32>::default();
             let session_store = SessionStore::<SessionSqlitePool>::new(Some(pool.clone().into()), session_config);
             session_store.initiate().await.unwrap();
 
@@ -88,7 +88,7 @@ cfg_if! {
                 .route("/api/*fn_name", get(server_fn_handler).post(server_fn_handler))
                 .leptos_routes_with_handler(routes, get(leptos_routes_handler) )
                 .fallback(file_and_error_handler)
-                .layer(AuthSessionLayer::<User, i64, SessionSqlitePool, SqlitePool>::new(Some(pool.clone()))
+                .layer(AuthSessionLayer::<User, u32, SessionSqlitePool, SqlitePool>::new(Some(pool.clone()))
                 .with_config(auth_config))
                 .layer(SessionLayer::new(session_store))
                 .with_state(app_state);

@@ -27,7 +27,8 @@ nav {
 nav a p {
   text-align: right;
   color: #000;
-  margin-left: 10px;
+  margin-left: 5px;
+  margin-right: 5px;
 }
 
 nav span {

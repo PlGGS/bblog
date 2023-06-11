@@ -8,7 +8,7 @@ if #[cfg(feature = "ssr")] {
     use sqlx::SqlitePool;
     use axum_session_auth::{SessionSqlitePool, Authentication, HasPermission};
     use bcrypt::{hash, verify, DEFAULT_COST};
-    pub type AuthSession = axum_session_auth::AuthSession<User, i64, SessionSqlitePool, SqlitePool>;
+    pub type AuthSession = axum_session_auth::AuthSession<User, u32, SessionSqlitePool, SqlitePool>;
         
     /// Gets pool from database
     pub fn pool(cx: Scope) -> Result<SqlitePool, ServerFnError> {
@@ -28,7 +28,7 @@ if #[cfg(feature = "ssr")] {
 /// Current user struct for authentication
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct User {
-    pub id: i64,
+    pub id: u32,
     pub first_name: String,
     pub last_name: String,
     pub username: String,
@@ -42,7 +42,7 @@ impl Default for User {
         let permissions = HashSet::new();
 
         Self {
-            id: -1,
+            id: 0,
             first_name: "Guest".into(),
             last_name: "Guestington".into(),
             username: "Guest".into(),
@@ -58,7 +58,7 @@ if #[cfg(feature = "ssr")] {
 
     /// Get current user from database by id
     impl User {
-        pub async fn get(id: i64, pool: &SqlitePool) -> Option<Self> {
+        pub async fn get(id: u32, pool: &SqlitePool) -> Option<Self> {
             let sqluser = sqlx::query_as::<_, SqlUser>("SELECT * FROM users WHERE id = ?")
                 .bind(id)
                 .fetch_one(pool)
@@ -104,9 +104,9 @@ if #[cfg(feature = "ssr")] {
     }
 
     #[async_trait]
-    impl Authentication<User, i64, SqlitePool> for User {
+    impl Authentication<User, u32, SqlitePool> for User {
         /// Authenticates current user
-        async fn load_user(userid: i64, pool: Option<&SqlitePool>) -> Result<User, anyhow::Error> {
+        async fn load_user(userid: u32, pool: Option<&SqlitePool>) -> Result<User, anyhow::Error> {
             let pool = pool.unwrap();
 
             User::get(userid, pool)
@@ -136,7 +136,7 @@ if #[cfg(feature = "ssr")] {
 
     #[derive(sqlx::FromRow, Clone)]
     pub struct SqlUser {
-        pub id: i64,
+        pub id: u32,
         pub first_name: String,
         pub last_name: String,
         pub username: String,
