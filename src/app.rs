@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         pub fn register_server_functions() {
+            _ = GetSeries::register();
             _ = GetPost::register();
             _ = GetAllUserSeries::register();
             _ = GetUserSeriesFromName::register();
@@ -107,6 +108,20 @@ pub async fn get_post(cx: Scope, id: u32) -> Result<Post, ServerFnError> {
                 .map_err(|e| ServerFnError::ServerError(e.to_string()))?;
     
     Ok(post)
+}
+
+/// Gets a series entry from the series table in the database
+#[server(GetSeries, "/api")]
+pub async fn get_series(cx: Scope, id: u32) -> Result<Series, ServerFnError> {
+    let pool = pool(cx)?;
+
+    let series = sqlx::query_as::<_, Series>("SELECT * FROM series WHERE id = ?")
+                .bind(id)
+                .fetch_one(&pool)
+                .await
+                .map_err(|e| ServerFnError::ServerError(e.to_string()))?;
+    
+    Ok(series)
 }
 
 /// Gets all series entries for a specific user based on their id from the series table in the database
@@ -631,6 +646,35 @@ pub fn UserFirstAndLastName(cx: Scope, id: u32) -> impl IntoView {
     }
 }
 
+/// Displays a user's series based its id
+#[component]
+pub fn SeriesLink(cx: Scope, id: u32) -> impl IntoView {
+    let series = create_resource(
+        cx,
+        move || (),
+        move |_| get_series(cx, id)
+    );
+
+    view! {
+        cx,
+        <Transition fallback=move || view! {cx, {} }>
+            {move || {
+                series.read(cx).map(move |series| match series {
+                    Err(e) => {
+                        view! { cx, <pre class="error">"Server Error: " {e.to_string()}</pre>}.into_view(cx)
+                    }
+                    Ok(series) => {
+                        view! { cx, 
+                            <A href=format!("/series/{}", series.id) >{series.name}</A>
+                        }.into_view(cx)
+                    }
+                })
+                .unwrap_or_default()
+            }}
+        </Transition>
+    }
+}
+
 /// Displays a Post based on the post_id in the URL route
 #[component]
 pub fn Post(cx: Scope) -> impl IntoView {
@@ -659,8 +703,13 @@ pub fn Post(cx: Scope) -> impl IntoView {
                                 cx,
                                 <div class="post">
                                     <h1>{post.title}</h1>
-                                    //TODO make series component and get the series <h2>{post.series}</h2>
-                                    <h4><UserProfileLink id=post.user_id /></h4>
+                                    <h3>{post.tagline}</h3>
+                                    //TODO make series component and get the series 
+                                    <SeriesLink id=post.series_id />
+                                    <br/>
+                                    <br/>
+                                    <AuthorLink id=post.user_id />
+                                    <h4>{post.created_at}" (Updated at "{post.updated_at}")"</h4>
                                     //TODO make date component and get post date here <h4>{post.title}</h4>
                                     <p>{post.content}</p>
                                 </div>

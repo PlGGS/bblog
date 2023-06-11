@@ -985,15 +985,6 @@
 <a href="#985" id="985">985</a>
 <a href="#986" id="986">986</a>
 <a href="#987" id="987">987</a>
-<a href="#988" id="988">988</a>
-<a href="#989" id="989">989</a>
-<a href="#990" id="990">990</a>
-<a href="#991" id="991">991</a>
-<a href="#992" id="992">992</a>
-<a href="#993" id="993">993</a>
-<a href="#994" id="994">994</a>
-<a href="#995" id="995">995</a>
-<a href="#996" id="996">996</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::auth::<span class="kw-2">*</span>;
 <span class="kw">use </span>cfg_if::cfg_if;
 <span class="kw">use </span>leptos::<span class="kw-2">*</span>;
@@ -1004,6 +995,7 @@
 <span class="macro">cfg_if! </span>{
     <span class="kw">if </span><span class="attr">#[cfg(feature = <span class="string">&quot;ssr&quot;</span>)] </span>{
         <span class="kw">pub fn </span>register_server_functions() {
+            <span class="kw">_ </span>= GetSeries::register();
             <span class="kw">_ </span>= GetPost::register();
             <span class="kw">_ </span>= GetAllUserSeries::register();
             <span class="kw">_ </span>= GetUserSeriesFromName::register();
@@ -1039,7 +1031,6 @@
             id: u32,
             user_id: u32,
             name: String,
-            description: String,
             created_at: String,
             updated_at: String,
         }
@@ -1075,7 +1066,6 @@
             id: u32,
             user_id: u32,
             name: String,
-            description: String,
             created_at: String,
             updated_at: String,
         }
@@ -1105,6 +1095,20 @@
                 </span>.map_err(|e| ServerFnError::ServerError(e.to_string()))<span class="question-mark">?</span>;
     
     <span class="prelude-val">Ok</span>(post)
+}
+
+<span class="doccomment">/// Gets a series entry from the series table in the database
+</span><span class="attr">#[server(GetSeries, <span class="string">&quot;/api&quot;</span>)]
+</span><span class="kw">pub async fn </span>get_series(cx: Scope, id: u32) -&gt; <span class="prelude-ty">Result</span>&lt;Series, ServerFnError&gt; {
+    <span class="kw">let </span>pool = pool(cx)<span class="question-mark">?</span>;
+
+    <span class="kw">let </span>series = sqlx::query_as::&lt;<span class="kw">_</span>, Series&gt;(<span class="string">&quot;SELECT * FROM series WHERE id = ?&quot;</span>)
+                .bind(id)
+                .fetch_one(<span class="kw-2">&amp;</span>pool)
+                .<span class="kw">await
+                </span>.map_err(|e| ServerFnError::ServerError(e.to_string()))<span class="question-mark">?</span>;
+    
+    <span class="prelude-val">Ok</span>(series)
 }
 
 <span class="doccomment">/// Gets all series entries for a specific user based on their id from the series table in the database
@@ -1242,81 +1246,86 @@
         <span class="prelude-val">None </span>=&gt; <span class="number">1</span>, <span class="comment">//1 is guest
     </span>};
 
-    <span class="macro">println!</span>(<span class="string">&quot;SERIES NAME: &quot;</span>);
-    <span class="macro">dbg!</span>(series_name.clone());
+    <span class="kw">let </span>series_name_copy: String = series_name.clone();
 
-    <span class="kw">let </span>allUserSeries = create_resource(
+    <span class="kw">let </span>series = create_resource(
         cx,
         <span class="kw">move </span>|| (),
         <span class="kw">move </span>|<span class="kw">_</span>| get_user_series_from_name(cx, user_id.clone(), series_name.clone()),
     );
 
-    <span class="macro">println!</span>(<span class="string">&quot;ALL USER SERIES: &quot;</span>);
-    <span class="macro">dbg!</span>(allUserSeries.clone());
+    <span class="comment">// println!(&quot;SERIES: &quot;);
+    // dbg!(series.clone());
 
-    <span class="kw">let </span>series_id = allUserSeries.read(cx).map(|series| <span class="kw">match </span>series {
-        <span class="prelude-val">Err</span>(e) =&gt; <span class="number">0</span>,
+    </span><span class="kw">let </span>series_id = series.read(cx).map(|series| <span class="kw">match </span>series {
+        <span class="prelude-val">Err</span>(_e) =&gt; <span class="prelude-val">None</span>,
         <span class="prelude-val">Ok</span>(series) =&gt; {
             <span class="macro">println!</span>(<span class="string">&quot;SINGLE SERIES: &quot;</span>);
             <span class="macro">dbg!</span>(series.clone());
 
-            series.id
+            <span class="prelude-val">Some</span>(series.id)
         }
     });
 
-    <span class="macro">println!</span>(<span class="string">&quot;SERIES ID: &quot;</span>);
-    <span class="macro">dbg!</span>(series_id.clone());
+    <span class="comment">// println!(&quot;SERIES ID: &quot;);
+    // dbg!(series_id.clone());
 
-    <span class="macro">println!</span>(<span class="string">&quot;USER ID: &quot;</span>);
-    <span class="macro">dbg!</span>(user_id.clone());
+    // println!(&quot;USER ID: &quot;);
+    // dbg!(user_id.clone());
 
-    <span class="macro">print!</span>(<span class="string">&quot;inserting into posts&quot;</span>);
-    <span class="kw">match </span>sqlx::query(
-        <span class="string">&quot;INSERT INTO posts (user_id, series_id, title, tagline, content, draft_saved, posted) 
-        VALUES (?, ?, ?, ?, ?, 1, 0)&quot;</span>,
-    )
-        .bind(user_id)
-        .bind(series_id)
-        .bind(title)
-        .bind(tagline)
-        .bind(content)
-        .execute(<span class="kw-2">&amp;</span>pool)
-        .<span class="kw">await
-    </span>{
-        <span class="prelude-val">Ok</span>(result) =&gt; {
-            <span class="macro">print!</span>(<span class="string">&quot;THIS ROW IS _ROW: &quot;</span>);
-            <span class="comment">// dbg!(result.clone());
-            // println!(&quot;Query executed successfully. Rows affected: {}&quot;, result.last_insert_rowid());
-            </span>leptos_axum::redirect(cx, <span class="macro">format!</span>(<span class="string">&quot;/post/{}&quot;</span>, result.last_insert_rowid()).as_str());
+    // print!(&quot;inserting into posts&quot;);
 
-            <span class="comment">// match result {
-            //     Ok(rows_affected) =&gt; {
-                    
-            //     }
-            //     Err(error) =&gt; {
-            //         println!(&quot;Error executing query: {}&quot;, error);
-            //     }
-            // }
-            </span><span class="prelude-val">Ok</span>(())
-        },
-        <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Err</span>(ServerFnError::ServerError(e.to_string())),
+    </span><span class="kw">if </span>series_id == <span class="prelude-val">None </span>{
+        <span class="comment">//TODO automatically create new series
+        </span><span class="kw">let </span>series_id = new_series(cx, series_name_copy).<span class="kw">await</span><span class="question-mark">?</span>;
+
+        <span class="macro">println!</span>(<span class="string">&quot;SERIES ID: &quot;</span>);
+        <span class="macro">dbg!</span>(series_id.clone());
+
+        <span class="kw">match </span>sqlx::query(
+            <span class="string">&quot;INSERT INTO posts (user_id, series_id, title, tagline, content, draft_saved, posted) 
+            VALUES (?, ?, ?, ?, ?, 1, 0)&quot;</span>,
+        )
+            .bind(user_id)
+            .bind(series_id)
+            .bind(title)
+            .bind(tagline)
+            .bind(content)
+            .execute(<span class="kw-2">&amp;</span>pool)
+            .<span class="kw">await
+        </span>{
+            <span class="prelude-val">Ok</span>(result) =&gt; {
+                leptos_axum::redirect(cx, <span class="macro">format!</span>(<span class="string">&quot;/post/{}&quot;</span>, result.last_insert_rowid()).as_str());
+                <span class="prelude-val">Ok</span>(())
+            },
+            <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Err</span>(ServerFnError::ServerError(e.to_string())),
+        }
     }
-
-    <span class="comment">// match series_id {
-    //     Some(Err(e)) =&gt; Err(ServerFnError::ServerError(e.to_string())),
-    //     Some(Ok(id)) =&gt; {
-            
-    //     }
-    //     None =&gt; {
-    //         println!(&quot;series_id is None&quot;);
-    //         Ok(())
-    //     }
-    // }
-</span>}
+    <span class="kw">else </span>{
+        <span class="kw">match </span>sqlx::query(
+            <span class="string">&quot;INSERT INTO posts (user_id, series_id, title, tagline, content, draft_saved, posted) 
+            VALUES (?, ?, ?, ?, ?, 1, 0)&quot;</span>,
+        )
+            .bind(user_id)
+            .bind(series_id)
+            .bind(title)
+            .bind(tagline)
+            .bind(content)
+            .execute(<span class="kw-2">&amp;</span>pool)
+            .<span class="kw">await
+        </span>{
+            <span class="prelude-val">Ok</span>(result) =&gt; {
+                leptos_axum::redirect(cx, <span class="macro">format!</span>(<span class="string">&quot;/post/{}&quot;</span>, result.last_insert_rowid()).as_str());
+                <span class="prelude-val">Ok</span>(())
+            },
+            <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Err</span>(ServerFnError::ServerError(e.to_string())),
+        }
+    }
+}
 
 <span class="doccomment">/// Inserts a new series into the series table in the database
 </span><span class="attr">#[server(NewSeries, <span class="string">&quot;/api&quot;</span>)]
-</span><span class="kw">pub async fn </span>new_series(cx: Scope, name: String, description: String) -&gt; <span class="prelude-ty">Result</span>&lt;(), ServerFnError&gt; {
+</span><span class="kw">pub async fn </span>new_series(cx: Scope, name: String) -&gt; <span class="prelude-ty">Result</span>&lt;u32, ServerFnError&gt; {
     <span class="kw">let </span>user = get_current_user(cx).<span class="kw">await</span><span class="question-mark">?</span>;
     <span class="kw">let </span>pool = pool(cx)<span class="question-mark">?</span>;
 
@@ -1326,16 +1335,14 @@
     </span>};
 
     <span class="kw">match </span>sqlx::query
-    (<span class="string">&quot;INSERT INTO series (user_id, name, description) 
-          VALUES (?, ?, ?)&quot;</span>)
+    (<span class="string">&quot;INSERT INTO series (user_id, name) 
+          VALUES (?, ?)&quot;</span>)
         .bind(user_id)
         .bind(name)
-        .bind(description)
         .execute(<span class="kw-2">&amp;</span>pool)
         .<span class="kw">await </span>{
-        <span class="prelude-val">Ok</span>(_row) =&gt; {
-            leptos_axum::redirect(cx, <span class="string">&quot;/draft&quot;</span>);
-            <span class="prelude-val">Ok</span>(())
+        <span class="prelude-val">Ok</span>(result) =&gt; {
+            <span class="prelude-val">Ok</span>(result.last_insert_rowid() <span class="kw">as </span>u32)
         },
         <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Err</span>(ServerFnError::ServerError(e.to_string())),
     }
@@ -1361,7 +1368,6 @@
     <span class="kw">let </span>logout = create_server_action::&lt;Logout&gt;(cx);
     <span class="kw">let </span>signup = create_server_action::&lt;Signup&gt;(cx);
     <span class="kw">let </span>newPostDraft = create_server_action::&lt;NewPostDraft&gt;(cx);
-    <span class="kw">let </span>newSeries = create_server_action::&lt;NewSeries&gt;(cx);
 
     <span class="kw">let </span>current_user = create_resource(
         cx,
@@ -1422,9 +1428,17 @@
                         cx,
                         &lt;UserProfile /&gt;
                     }/&gt;
-                    &lt;Route path=<span class="string">&quot;/post/:post_id&quot; </span>view=<span class="kw">move </span>|cx| <span class="macro">view! </span>{
+                    &lt;Route path=<span class="string">&quot;/series/not_found&quot; </span>view=<span class="kw">move </span>|cx| <span class="macro">view! </span>{
                         cx,
-                        &lt;Post/&gt;
+                        &lt;h1&gt;<span class="string">&quot;Series not found...&quot;</span>&lt;/h1&gt;
+                    }/&gt;
+                    <span class="comment">// &lt;Route path=&quot;/series/:series_id&quot; view=move |cx| view! {
+                    //     cx,
+                    //     &lt;Series /&gt;
+                    // }/&gt;
+                    </span>&lt;Route path=<span class="string">&quot;/post/:post_id&quot; </span>view=<span class="kw">move </span>|cx| <span class="macro">view! </span>{
+                        cx,
+                        &lt;Post /&gt;
                     }/&gt;
                     &lt;Route path=<span class="string">&quot;/signup&quot; </span>view=<span class="kw">move </span>|cx| <span class="macro">view! </span>{
                         cx,
@@ -1451,7 +1465,7 @@
                                         &lt;span&gt;<span class="string">&quot;User not logged in...&quot;</span>&lt;/span&gt;
                                     }.into_view(cx),
                                     <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(user)) =&gt; <span class="macro">view! </span>{cx,
-                                        &lt;NewPost user=user post_action=newPostDraft add_series_action=newSeries /&gt;
+                                        &lt;NewPost user=user post_action=newPostDraft /&gt;
                                     }.into_view(cx)
                                 })
                             }}
@@ -1619,6 +1633,35 @@
     }
 }
 
+<span class="doccomment">/// Displays a user&#39;s series based its id
+</span><span class="attr">#[component]
+</span><span class="kw">pub fn </span>SeriesLink(cx: Scope, id: u32) -&gt; <span class="kw">impl </span>IntoView {
+    <span class="kw">let </span>series = create_resource(
+        cx,
+        <span class="kw">move </span>|| (),
+        <span class="kw">move </span>|<span class="kw">_</span>| get_series(cx, id)
+    );
+
+    <span class="macro">view! </span>{
+        cx,
+        &lt;Transition fallback=<span class="kw">move </span>|| <span class="macro">view! </span>{cx, {} }&gt;
+            {<span class="kw">move </span>|| {
+                series.read(cx).map(<span class="kw">move </span>|series| <span class="kw">match </span>series {
+                    <span class="prelude-val">Err</span>(e) =&gt; {
+                        <span class="macro">view! </span>{ cx, &lt;pre class=<span class="string">&quot;error&quot;</span>&gt;<span class="string">&quot;Server Error: &quot; </span>{e.to_string()}&lt;/pre&gt;}.into_view(cx)
+                    }
+                    <span class="prelude-val">Ok</span>(series) =&gt; {
+                        <span class="macro">view! </span>{ cx, 
+                            &lt;A href=<span class="macro">format!</span>(<span class="string">&quot;/series/{}&quot;</span>, series.id) &gt;{series.name}&lt;/A&gt;
+                        }.into_view(cx)
+                    }
+                })
+                .unwrap_or_default()
+            }}
+        &lt;/Transition&gt;
+    }
+}
+
 <span class="doccomment">/// Displays a Post based on the post_id in the URL route
 </span><span class="attr">#[component]
 </span><span class="kw">pub fn </span>Post(cx: Scope) -&gt; <span class="kw">impl </span>IntoView {
@@ -1647,8 +1690,13 @@
                                 cx,
                                 &lt;div class=<span class="string">&quot;post&quot;</span>&gt;
                                     &lt;h1&gt;{post.title}&lt;/h1&gt;
-                                    <span class="comment">//TODO make series component and get the series &lt;h2&gt;{post.series}&lt;/h2&gt;
-                                    </span>&lt;h4&gt;&lt;UserProfileLink id=post.user_id /&gt;&lt;/h4&gt;
+                                    &lt;h3&gt;{post.tagline}&lt;/h3&gt;
+                                    <span class="comment">//TODO make series component and get the series 
+                                    </span>&lt;SeriesLink id=post.series_id /&gt;
+                                    &lt;br/&gt;
+                                    &lt;br/&gt;
+                                    &lt;AuthorLink id=post.user_id /&gt;
+                                    &lt;h4&gt;{post.created_at}<span class="string">&quot; (Updated at &quot;</span>{post.updated_at}<span class="string">&quot;)&quot;</span>&lt;/h4&gt;
                                     <span class="comment">//TODO make date component and get post date here &lt;h4&gt;{post.title}&lt;/h4&gt;
                                     </span>&lt;p&gt;{post.content}&lt;/p&gt;
                                 &lt;/div&gt;
@@ -1732,71 +1780,7 @@
     }
 }
 
-
-
-
-
-<span class="comment">// /// Displays a dropdown picker of user&#39;s series alongside an input and button for a specified User by id
-// #[component]
-// pub fn UserSeriesDropDown(cx: Scope, user_id: u32) -&gt; impl IntoView {
-//     let allSeries = create_resource(
-//         cx,
-//         move || (),
-//         move |_| get_all_user_series(cx, user_id)
-//     );
-    
-//     view! {
-//         cx,
-//         &lt;div&gt;
-//             &lt;Transition fallback=move || view! {cx, {} }&gt;
-//                 {move || {
-//                     allSeries.read(cx)
-//                     .map(move |allSeries| match allSeries {
-//                         Err(e) =&gt; {
-//                             view! { cx, &lt;pre class=&quot;error&quot;&gt;&quot;Server Error: &quot; {e.to_string()}&lt;/pre&gt;}.into_view(cx)
-//                         }
-//                         Ok(allSeries) =&gt; {
-//                             if allSeries.is_empty() {
-//                                 view! { cx, 
-//                                     {}
-//                                 }.into_view(cx)
-//                             } else {
-//                                 view! { cx, 
-//                                     &lt;select&gt;
-//                                         allSeries
-//                                         .into_iter()
-//                                         .map(move |series| {
-//                                             view! {
-//                                                     cx, 
-//                                                     &lt;SingleSeriesDropDown series=series /&gt;
-//                                                 }
-//                                             })
-//                                             .collect_view(cx)
-//                                     &lt;/select&gt;
-//                                 }.into_view(cx)
-//                             }
-//                         }
-//                     }).unwrap_or_default()
-//                 }}
-//             &lt;/Transition&gt;
-//         &lt;/div&gt;
-//     }
-// }
-
-// /// Displays a dropdown picker for a single Series
-// #[component]
-// pub fn SingleSeriesDropDown(cx: Scope, series: Series) -&gt; impl IntoView {
-//     view! {
-//         cx,
-//         &lt;option value=series.name.clone() name=&quot;series_name&quot;&gt;{series.name}&lt;/option&gt;
-//     }
-// }
-
-
-
-
-
-</span><span class="doccomment">/// Displays a dropdown picker of user&#39;s series alongside an input and button for a specified User by id
+<span class="doccomment">/// Displays a dropdown picker of user&#39;s series alongside an input and button for a specified User by id
 </span><span class="attr">#[component]
 </span><span class="kw">pub fn </span>UserSeriesDropDown(cx: Scope, user_id: u32) -&gt; <span class="kw">impl </span>IntoView {
     <span class="kw">let </span>allSeries = create_resource(
@@ -1827,7 +1811,7 @@
                                     .map(<span class="kw">move </span>|series| {
                                         <span class="macro">view! </span>{
                                             cx, 
-                                            &lt;option value=series.name.clone() name=<span class="string">&quot;series_name&quot;</span>&gt;{series.name}&lt;/option&gt;
+                                            &lt;option value=series.name.clone() <span class="comment">/*name=&quot;series_name&quot;*/</span>&gt;{series.name}&lt;/option&gt;
                                         }
                                     })
                                     .collect_view(cx)
@@ -1847,14 +1831,13 @@
     cx: Scope,
     user: <span class="kw">crate</span>::auth::User,
     post_action: Action&lt;NewPostDraft, <span class="prelude-ty">Result</span>&lt;(), ServerFnError&gt;&gt;,
-    add_series_action: Action&lt;NewSeries, <span class="prelude-ty">Result</span>&lt;(), ServerFnError&gt;&gt;,
 ) -&gt; <span class="kw">impl </span>IntoView {
     <span class="macro">view! </span>{
         cx,
         &lt;h1&gt;<span class="string">&quot;New Post&quot;</span>&lt;/h1&gt;
         &lt;ActionForm action=post_action&gt;
-            <span class="comment">// &lt;UserSeriesDropDown user_id=user.id /&gt;
-            </span>&lt;label&gt;
+            &lt;UserSeriesDropDown user_id=user.id /&gt;
+            &lt;label&gt;
                 <span class="string">&quot;Series: &quot;
                 </span>&lt;input <span class="kw">type</span>=<span class="string">&quot;text&quot; </span>placeholder=<span class="string">&quot;Post series&quot; </span>maxlength=<span class="string">&quot;64&quot; </span>name=<span class="string">&quot;series_name&quot; </span>class=<span class="string">&quot;auth-input&quot; </span>/&gt;
             &lt;/label&gt;
@@ -1893,7 +1876,6 @@
             &lt;label&gt;
                 <span class="string">&quot;New Series: &quot;
                 </span>&lt;input <span class="kw">type</span>=<span class="string">&quot;text&quot; </span>placeholder=<span class="string">&quot;Name&quot; </span>maxlength=<span class="string">&quot;64&quot; </span>name=<span class="string">&quot;name&quot; </span>class=<span class="string">&quot;auth-input&quot; </span>/&gt;
-                &lt;input <span class="kw">type</span>=<span class="string">&quot;text&quot; </span>placeholder=<span class="string">&quot;Description&quot; </span>maxlength=<span class="string">&quot;64&quot; </span>name=<span class="string">&quot;description&quot; </span>class=<span class="string">&quot;auth-input&quot; </span>/&gt;
                 <span class="comment">// &lt;button type=&quot;submit&quot; class=&quot;button&quot;&gt;&quot;Create new series&quot;&lt;/button&gt;
             </span>&lt;/label&gt;
         &lt;/ActionForm&gt;
