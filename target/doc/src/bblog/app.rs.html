@@ -1164,6 +1164,8 @@
 <a href="#1164" id="1164">1164</a>
 <a href="#1165" id="1165">1165</a>
 <a href="#1166" id="1166">1166</a>
+<a href="#1167" id="1167">1167</a>
+<a href="#1168" id="1168">1168</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::auth::<span class="kw-2">*</span>;
 <span class="kw">use </span>cfg_if::cfg_if;
 <span class="kw">use </span>leptos::<span class="kw-2">*</span>;
@@ -1455,6 +1457,7 @@
 
     // print!(&quot;inserting into posts&quot;);
 
+    //TODO figure out why series_id is always None
     </span><span class="kw">if </span>series_id == <span class="prelude-val">None </span>{
         <span class="kw">let </span>series_id = new_series(cx, series_name_copy).<span class="kw">await</span><span class="question-mark">?</span>;
 
@@ -2086,6 +2089,7 @@
                                 cx,
                                 &lt;div class=<span class="string">&quot;user&quot;</span>&gt;
                                     &lt;h1&gt;&lt;UserFirstAndLastName id=user.id /&gt;&lt;/h1&gt;
+                                    &lt;h3&gt;<span class="string">&quot;Joined: &quot;</span>{user.created_at}&lt;/h3&gt;
                                     <span class="comment">//TODO make profile picture component and get it here next to their name in flex box
                                     </span>&lt;UserPosts id=user.id is_current_user=user_is_current_user /&gt;
                                 &lt;/div&gt;
@@ -2154,7 +2158,7 @@
 ) -&gt; <span class="kw">impl </span>IntoView {
     <span class="macro">view! </span>{
         cx,
-        &lt;h1&gt;<span class="string">&quot;New Post&quot;</span>&lt;/h1&gt;
+        &lt;h1&gt;<span class="string">&quot;New Draft&quot;</span>&lt;/h1&gt;
         &lt;ActionForm action=post_action&gt;
             &lt;UserSeriesDropDown user_id=user.id /&gt;
             &lt;label&gt;
@@ -2174,7 +2178,7 @@
             &lt;br/&gt;
             &lt;label&gt;
                 <span class="string">&quot;Content: &quot;
-                </span>&lt;input <span class="kw">type</span>=<span class="string">&quot;text&quot; </span>placeholder=<span class="string">&quot;Post content&quot; </span>maxlength=<span class="string">&quot;32&quot; </span>name=<span class="string">&quot;content&quot; </span>class=<span class="string">&quot;auth-input&quot; </span>/&gt;
+                </span>&lt;textarea rows=<span class="string">&quot;20&quot; </span>cols=<span class="string">&quot;100&quot; </span><span class="kw">type</span>=<span class="string">&quot;text&quot; </span>placeholder=<span class="string">&quot;Post content&quot; </span>name=<span class="string">&quot;content&quot; </span>class=<span class="string">&quot;auth-input-content&quot; </span>/&gt;
             &lt;/label&gt;
             &lt;br/&gt;
             &lt;br/&gt;
@@ -2212,7 +2216,7 @@
             &lt;br/&gt;
             &lt;label&gt;
                 <span class="string">&quot;Content: &quot;
-                </span>&lt;input <span class="kw">type</span>=<span class="string">&quot;text&quot; </span>placeholder=<span class="string">&quot;Post content&quot; </span>maxlength=<span class="string">&quot;32&quot; </span>name=<span class="string">&quot;content&quot; </span>class=<span class="string">&quot;auth-input&quot; </span>/&gt;
+                </span>&lt;textarea rows=<span class="string">&quot;20&quot; </span>cols=<span class="string">&quot;100&quot; </span><span class="kw">type</span>=<span class="string">&quot;text&quot; </span>placeholder=<span class="string">&quot;Post content&quot; </span>name=<span class="string">&quot;content&quot; </span>class=<span class="string">&quot;auth-input-content&quot; </span>/&gt;
             &lt;/label&gt;
             &lt;br/&gt;
             &lt;br/&gt;
