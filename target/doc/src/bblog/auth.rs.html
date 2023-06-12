@@ -256,6 +256,10 @@
 <a href="#256" id="256">256</a>
 <a href="#257" id="257">257</a>
 <a href="#258" id="258">258</a>
+<a href="#259" id="259">259</a>
+<a href="#260" id="260">260</a>
+<a href="#261" id="261">261</a>
+<a href="#262" id="262">262</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>cfg_if::cfg_if;
 <span class="kw">use </span>leptos::<span class="kw-2">*</span>;
 <span class="kw">use </span>serde::{Deserialize, Serialize};
@@ -424,14 +428,16 @@
 }
 }
 
-<span class="attr">#[server(GetCurrentUser, <span class="string">&quot;/api&quot;</span>)]
+<span class="doccomment">/// Gets the currently authenticated User
+</span><span class="attr">#[server(GetCurrentUser, <span class="string">&quot;/api&quot;</span>)]
 </span><span class="kw">pub async fn </span>get_current_user(cx: Scope) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;User&gt;, ServerFnError&gt; {
     <span class="kw">let </span>auth = auth(cx)<span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(auth.current_user)
 }
 
-<span class="attr">#[server(Login, <span class="string">&quot;/api&quot;</span>)]
+<span class="doccomment">/// Handles a login request
+</span><span class="attr">#[server(Login, <span class="string">&quot;/api&quot;</span>)]
 </span><span class="kw">pub async fn </span>login(
     cx: Scope,
     username: String,
@@ -461,7 +467,8 @@
     }
 }
 
-<span class="attr">#[server(Signup, <span class="string">&quot;/api&quot;</span>)]
+<span class="doccomment">/// Handles a signup request
+</span><span class="attr">#[server(Signup, <span class="string">&quot;/api&quot;</span>)]
 </span><span class="kw">pub async fn </span>signup(
     cx: Scope,
     first_name: String,
@@ -505,7 +512,8 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="attr">#[server(Logout, <span class="string">&quot;/api&quot;</span>)]
+<span class="doccomment">/// Handles a logout request
+</span><span class="attr">#[server(Logout, <span class="string">&quot;/api&quot;</span>)]
 </span><span class="kw">pub async fn </span>logout(cx: Scope) -&gt; <span class="prelude-ty">Result</span>&lt;(), ServerFnError&gt; {
     <span class="kw">let </span>auth = auth(cx)<span class="question-mark">?</span>;
 

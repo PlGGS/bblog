@@ -166,6 +166,7 @@ if #[cfg(feature = "ssr")] {
 }
 }
 
+/// Gets the currently authenticated User
 #[server(GetCurrentUser, "/api")]
 pub async fn get_current_user(cx: Scope) -> Result<Option<User>, ServerFnError> {
     let auth = auth(cx)?;
@@ -173,6 +174,7 @@ pub async fn get_current_user(cx: Scope) -> Result<Option<User>, ServerFnError> 
     Ok(auth.current_user)
 }
 
+/// Handles a login request
 #[server(Login, "/api")]
 pub async fn login(
     cx: Scope,
@@ -203,6 +205,7 @@ pub async fn login(
     }
 }
 
+/// Handles a signup request
 #[server(Signup, "/api")]
 pub async fn signup(
     cx: Scope,
@@ -247,6 +250,7 @@ pub async fn signup(
     Ok(())
 }
 
+/// Handles a logout request
 #[server(Logout, "/api")]
 pub async fn logout(cx: Scope) -> Result<(), ServerFnError> {
     let auth = auth(cx)?;
