@@ -289,12 +289,9 @@ pub async fn new_post_draft(cx: Scope, series_name: String, title: String, tagli
     // print!("inserting into posts");
 
     if series_id == None {
-        //TODO automatically create new series
         let series_id = new_series(cx, series_name_copy).await?;
 
-        println!("SERIES ID: ");
-        dbg!(series_id.clone());
-
+        //I would put this in its own function but I can't figure out how to pass all the required deps and I'm running out of time
         match sqlx::query(
             "INSERT INTO posts (user_id, series_id, title, tagline, content, draft_saved, posted) 
             VALUES (?, ?, ?, ?, ?, 1, 0)",
@@ -439,7 +436,23 @@ pub fn App(cx: Scope) -> impl IntoView {
                     }/>
                     <Route path="/u/:username" view=move |cx| view! {
                         cx,
-                        <UserProfile />
+                        <Transition fallback=move || view! {cx, <span>"Loading..."</span>}>
+                            {move || {
+                                current_user.read(cx).map(|user| match user {
+                                    Err(e) => view! {cx,
+                                        <span>{format!("User error: {}", e.to_string())}</span>
+                                        <UserProfile current_user=None />
+                                    }.into_view(cx),
+                                    Ok(None) => view! {cx,
+                                        <UserProfile current_user=None />
+                                    }.into_view(cx),
+                                    Ok(Some(user)) => view! {cx,
+                                        <UserProfile current_user=Some(user) />
+                                    }.into_view(cx)
+                                })
+                            }}
+                        </Transition>
+                        
                     }/>
                     <Route path="/series/not_found" view=move |cx| view! {
                         cx,
@@ -502,13 +515,13 @@ pub fn AllPosts(cx: Scope) -> impl IntoView {
     view! {
         cx,
         //TODO only pull so many and add buttons at the bottom to load the next and previous batch of posts
-        <PostList posts=posts />
+        <PostList posts=posts show_drafts=false />
     }
 }
 
 /// PostList containing every post by a specified user based on their id in the database
 #[component]
-pub fn UserPosts(cx: Scope, id: u32) -> impl IntoView {
+pub fn UserPosts(cx: Scope, id: u32, is_current_user: bool) -> impl IntoView {
     let posts: Resource<(), Result<Vec<Post>, ServerFnError>> = create_resource(
         cx,
         move || (),
@@ -517,13 +530,13 @@ pub fn UserPosts(cx: Scope, id: u32) -> impl IntoView {
 
     view! {
         cx,
-        <PostList posts=posts />
+        <PostList posts=posts show_drafts=is_current_user />
     }
 }
 
 /// Generic PostList component for rendering a vector of posts as PostCard components
 #[component]
-pub fn PostList(cx: Scope, posts: Resource<(), Result<Vec<Post>, ServerFnError>>) -> impl IntoView {
+pub fn PostList(cx: Scope, posts: Resource<(), Result<Vec<Post>, ServerFnError>>, show_drafts: bool) -> impl IntoView {
     view! {
         cx,
         <div>
@@ -540,9 +553,25 @@ pub fn PostList(cx: Scope, posts: Resource<(), Result<Vec<Post>, ServerFnError>>
                                 posts
                                     .into_iter()
                                     .map(move |post| {
-                                        view! {
-                                            cx, 
-                                            <PostCard post=post />
+                                        if show_drafts {
+                                            view! {
+                                                cx, 
+                                                <PostCard post=post />
+                                            }.into_view(cx)
+                                        }
+                                        else {
+                                            if post.posted == true {
+                                                view! {
+                                                    cx, 
+                                                    <PostCard post=post />
+                                                }.into_view(cx)
+                                            }
+                                            else {
+                                                view! {
+                                                    cx, 
+                                                    <div/>
+                                                }.into_view(cx)
+                                            }
                                         }
                                     })
                                     .collect_view(cx)
@@ -703,14 +732,14 @@ pub fn Post(cx: Scope) -> impl IntoView {
                                 cx,
                                 <div class="post">
                                     <h1>{post.title}</h1>
-                                    <h3>{post.tagline}</h3>
                                     //TODO make series component and get the series 
                                     <SeriesLink id=post.series_id />
                                     <br/>
                                     <br/>
                                     <AuthorLink id=post.user_id />
-                                    <h4>{post.created_at}" (Updated at "{post.updated_at}")"</h4>
                                     //TODO make date component and get post date here <h4>{post.title}</h4>
+                                    <h4>{post.created_at}" (Updated at "{post.updated_at}")"</h4>
+                                    <h3><i>{post.tagline}</i></h3>
                                     <p>{post.content}</p>
                                 </div>
                             }
@@ -751,9 +780,18 @@ pub fn UserProfileLink(cx: Scope, id: u32) -> impl IntoView {
     }
 }
 
+pub async fn user_is_current_user(cx: Scope, username: String, current_user: Option<crate::auth::User>) -> bool {
+    if current_user.is_some() {
+        current_user.unwrap().username == username
+    }
+    else {
+        false
+    }
+}
+
 /// Displays a user's information alongside their most recent posts
 #[component]
-pub fn UserProfile(cx: Scope) -> impl IntoView {
+pub fn UserProfile(cx: Scope, current_user: Option<crate::auth::User>) -> impl IntoView {
     let params = use_params_map(cx);
     
     let get_username = move || params.with(|params| params.get("username").cloned().unwrap_or_default());
@@ -764,6 +802,11 @@ pub fn UserProfile(cx: Scope) -> impl IntoView {
         move || (),
         move |_| get_user_from_username(cx, username.clone()),
     );
+
+    let mut user_is_current_user = false;
+    if current_user.is_some() {
+        user_is_current_user = current_user.unwrap().username == get_username();
+    }
 
     view! {
         cx,
@@ -780,7 +823,7 @@ pub fn UserProfile(cx: Scope) -> impl IntoView {
                                 <div class="user">
                                     <h1><UserFirstAndLastName id=user.id /></h1>
                                     //TODO make profile picture component and get it here next to their name in flex box
-                                    <UserPosts id=user.id />
+                                    <UserPosts id=user.id is_current_user=user_is_current_user />
                                 </div>
                             }
                             .into_view(cx)
@@ -806,7 +849,7 @@ pub fn UserSeriesDropDown(cx: Scope, user_id: u32) -> impl IntoView {
         cx,
         <div>
             <Transition fallback=move || view! {cx, {} }>
-                <select name="series_name">
+                <select /*name="series_name"*/>
                 {move || {
                     allSeries.read(cx)
                     .map(move |allSeries| match allSeries {

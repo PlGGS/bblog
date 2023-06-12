@@ -985,6 +985,52 @@
 <a href="#985" id="985">985</a>
 <a href="#986" id="986">986</a>
 <a href="#987" id="987">987</a>
+<a href="#988" id="988">988</a>
+<a href="#989" id="989">989</a>
+<a href="#990" id="990">990</a>
+<a href="#991" id="991">991</a>
+<a href="#992" id="992">992</a>
+<a href="#993" id="993">993</a>
+<a href="#994" id="994">994</a>
+<a href="#995" id="995">995</a>
+<a href="#996" id="996">996</a>
+<a href="#997" id="997">997</a>
+<a href="#998" id="998">998</a>
+<a href="#999" id="999">999</a>
+<a href="#1000" id="1000">1000</a>
+<a href="#1001" id="1001">1001</a>
+<a href="#1002" id="1002">1002</a>
+<a href="#1003" id="1003">1003</a>
+<a href="#1004" id="1004">1004</a>
+<a href="#1005" id="1005">1005</a>
+<a href="#1006" id="1006">1006</a>
+<a href="#1007" id="1007">1007</a>
+<a href="#1008" id="1008">1008</a>
+<a href="#1009" id="1009">1009</a>
+<a href="#1010" id="1010">1010</a>
+<a href="#1011" id="1011">1011</a>
+<a href="#1012" id="1012">1012</a>
+<a href="#1013" id="1013">1013</a>
+<a href="#1014" id="1014">1014</a>
+<a href="#1015" id="1015">1015</a>
+<a href="#1016" id="1016">1016</a>
+<a href="#1017" id="1017">1017</a>
+<a href="#1018" id="1018">1018</a>
+<a href="#1019" id="1019">1019</a>
+<a href="#1020" id="1020">1020</a>
+<a href="#1021" id="1021">1021</a>
+<a href="#1022" id="1022">1022</a>
+<a href="#1023" id="1023">1023</a>
+<a href="#1024" id="1024">1024</a>
+<a href="#1025" id="1025">1025</a>
+<a href="#1026" id="1026">1026</a>
+<a href="#1027" id="1027">1027</a>
+<a href="#1028" id="1028">1028</a>
+<a href="#1029" id="1029">1029</a>
+<a href="#1030" id="1030">1030</a>
+<a href="#1031" id="1031">1031</a>
+<a href="#1032" id="1032">1032</a>
+<a href="#1033" id="1033">1033</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::auth::<span class="kw-2">*</span>;
 <span class="kw">use </span>cfg_if::cfg_if;
 <span class="kw">use </span>leptos::<span class="kw-2">*</span>;
@@ -1426,7 +1472,23 @@
                     }/&gt;
                     &lt;Route path=<span class="string">&quot;/u/:username&quot; </span>view=<span class="kw">move </span>|cx| <span class="macro">view! </span>{
                         cx,
-                        &lt;UserProfile /&gt;
+                        &lt;Transition fallback=<span class="kw">move </span>|| <span class="macro">view! </span>{cx, &lt;span&gt;<span class="string">&quot;Loading...&quot;</span>&lt;/span&gt;}&gt;
+                            {<span class="kw">move </span>|| {
+                                current_user.read(cx).map(|user| <span class="kw">match </span>user {
+                                    <span class="prelude-val">Err</span>(e) =&gt; <span class="macro">view! </span>{cx,
+                                        &lt;span&gt;{<span class="macro">format!</span>(<span class="string">&quot;User error: {}&quot;</span>, e.to_string())}&lt;/span&gt;
+                                        &lt;UserProfile current_user=<span class="prelude-val">None </span>/&gt;
+                                    }.into_view(cx),
+                                    <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>) =&gt; <span class="macro">view! </span>{cx,
+                                        &lt;UserProfile current_user=<span class="prelude-val">None </span>/&gt;
+                                    }.into_view(cx),
+                                    <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(user)) =&gt; <span class="macro">view! </span>{cx,
+                                        &lt;UserProfile current_user=<span class="prelude-val">Some</span>(user) /&gt;
+                                    }.into_view(cx)
+                                })
+                            }}
+                        &lt;/Transition&gt;
+                        
                     }/&gt;
                     &lt;Route path=<span class="string">&quot;/series/not_found&quot; </span>view=<span class="kw">move </span>|cx| <span class="macro">view! </span>{
                         cx,
@@ -1489,13 +1551,13 @@
     <span class="macro">view! </span>{
         cx,
         <span class="comment">//TODO only pull so many and add buttons at the bottom to load the next and previous batch of posts
-        </span>&lt;PostList posts=posts /&gt;
+        </span>&lt;PostList posts=posts show_drafts=<span class="bool-val">false </span>/&gt;
     }
 }
 
 <span class="doccomment">/// PostList containing every post by a specified user based on their id in the database
 </span><span class="attr">#[component]
-</span><span class="kw">pub fn </span>UserPosts(cx: Scope, id: u32) -&gt; <span class="kw">impl </span>IntoView {
+</span><span class="kw">pub fn </span>UserPosts(cx: Scope, id: u32, is_current_user: bool) -&gt; <span class="kw">impl </span>IntoView {
     <span class="kw">let </span>posts: Resource&lt;(), <span class="prelude-ty">Result</span>&lt;Vec&lt;Post&gt;, ServerFnError&gt;&gt; = create_resource(
         cx,
         <span class="kw">move </span>|| (),
@@ -1504,13 +1566,13 @@
 
     <span class="macro">view! </span>{
         cx,
-        &lt;PostList posts=posts /&gt;
+        &lt;PostList posts=posts show_drafts=is_current_user /&gt;
     }
 }
 
 <span class="doccomment">/// Generic PostList component for rendering a vector of posts as PostCard components
 </span><span class="attr">#[component]
-</span><span class="kw">pub fn </span>PostList(cx: Scope, posts: Resource&lt;(), <span class="prelude-ty">Result</span>&lt;Vec&lt;Post&gt;, ServerFnError&gt;&gt;) -&gt; <span class="kw">impl </span>IntoView {
+</span><span class="kw">pub fn </span>PostList(cx: Scope, posts: Resource&lt;(), <span class="prelude-ty">Result</span>&lt;Vec&lt;Post&gt;, ServerFnError&gt;&gt;, show_drafts: bool) -&gt; <span class="kw">impl </span>IntoView {
     <span class="macro">view! </span>{
         cx,
         &lt;div&gt;
@@ -1527,9 +1589,25 @@
                                 posts
                                     .into_iter()
                                     .map(<span class="kw">move </span>|post| {
-                                        <span class="macro">view! </span>{
-                                            cx, 
-                                            &lt;PostCard post=post /&gt;
+                                        <span class="kw">if </span>show_drafts {
+                                            <span class="macro">view! </span>{
+                                                cx, 
+                                                &lt;PostCard post=post /&gt;
+                                            }.into_view(cx)
+                                        }
+                                        <span class="kw">else </span>{
+                                            <span class="kw">if </span>post.posted == <span class="bool-val">true </span>{
+                                                <span class="macro">view! </span>{
+                                                    cx, 
+                                                    &lt;PostCard post=post /&gt;
+                                                }.into_view(cx)
+                                            }
+                                            <span class="kw">else </span>{
+                                                <span class="macro">view! </span>{
+                                                    cx, 
+                                                    &lt;div/&gt;
+                                                }.into_view(cx)
+                                            }
                                         }
                                     })
                                     .collect_view(cx)
@@ -1690,15 +1768,15 @@
                                 cx,
                                 &lt;div class=<span class="string">&quot;post&quot;</span>&gt;
                                     &lt;h1&gt;{post.title}&lt;/h1&gt;
-                                    &lt;h3&gt;{post.tagline}&lt;/h3&gt;
                                     <span class="comment">//TODO make series component and get the series 
                                     </span>&lt;SeriesLink id=post.series_id /&gt;
                                     &lt;br/&gt;
                                     &lt;br/&gt;
                                     &lt;AuthorLink id=post.user_id /&gt;
-                                    &lt;h4&gt;{post.created_at}<span class="string">&quot; (Updated at &quot;</span>{post.updated_at}<span class="string">&quot;)&quot;</span>&lt;/h4&gt;
                                     <span class="comment">//TODO make date component and get post date here &lt;h4&gt;{post.title}&lt;/h4&gt;
-                                    </span>&lt;p&gt;{post.content}&lt;/p&gt;
+                                    </span>&lt;h4&gt;{post.created_at}<span class="string">&quot; (Updated at &quot;</span>{post.updated_at}<span class="string">&quot;)&quot;</span>&lt;/h4&gt;
+                                    &lt;h3&gt;&lt;i&gt;{post.tagline}&lt;/i&gt;&lt;/h3&gt;
+                                    &lt;p&gt;{post.content}&lt;/p&gt;
                                 &lt;/div&gt;
                             }
                             .into_view(cx)
@@ -1738,9 +1816,18 @@
     }
 }
 
+<span class="kw">pub async fn </span>user_is_current_user(cx: Scope, username: String, current_user: <span class="prelude-ty">Option</span>&lt;<span class="kw">crate</span>::auth::User&gt;) -&gt; bool {
+    <span class="kw">if </span>current_user.is_some() {
+        current_user.unwrap().username == username
+    }
+    <span class="kw">else </span>{
+        <span class="bool-val">false
+    </span>}
+}
+
 <span class="doccomment">/// Displays a user&#39;s information alongside their most recent posts
 </span><span class="attr">#[component]
-</span><span class="kw">pub fn </span>UserProfile(cx: Scope) -&gt; <span class="kw">impl </span>IntoView {
+</span><span class="kw">pub fn </span>UserProfile(cx: Scope, current_user: <span class="prelude-ty">Option</span>&lt;<span class="kw">crate</span>::auth::User&gt;) -&gt; <span class="kw">impl </span>IntoView {
     <span class="kw">let </span>params = use_params_map(cx);
     
     <span class="kw">let </span>get_username = <span class="kw">move </span>|| params.with(|params| params.get(<span class="string">&quot;username&quot;</span>).cloned().unwrap_or_default());
@@ -1751,6 +1838,11 @@
         <span class="kw">move </span>|| (),
         <span class="kw">move </span>|<span class="kw">_</span>| get_user_from_username(cx, username.clone()),
     );
+
+    <span class="kw">let </span><span class="kw-2">mut </span>user_is_current_user = <span class="bool-val">false</span>;
+    <span class="kw">if </span>current_user.is_some() {
+        user_is_current_user = current_user.unwrap().username == get_username();
+    }
 
     <span class="macro">view! </span>{
         cx,
@@ -1767,7 +1859,7 @@
                                 &lt;div class=<span class="string">&quot;user&quot;</span>&gt;
                                     &lt;h1&gt;&lt;UserFirstAndLastName id=user.id /&gt;&lt;/h1&gt;
                                     <span class="comment">//TODO make profile picture component and get it here next to their name in flex box
-                                    </span>&lt;UserPosts id=user.id /&gt;
+                                    </span>&lt;UserPosts id=user.id is_current_user=user_is_current_user /&gt;
                                 &lt;/div&gt;
                             }
                             .into_view(cx)
@@ -1793,7 +1885,7 @@
         cx,
         &lt;div&gt;
             &lt;Transition fallback=<span class="kw">move </span>|| <span class="macro">view! </span>{cx, {} }&gt;
-                &lt;select name=<span class="string">&quot;series_name&quot;</span>&gt;
+                &lt;select <span class="comment">/*name=&quot;series_name&quot;*/</span>&gt;
                 {<span class="kw">move </span>|| {
                     allSeries.read(cx)
                     .map(<span class="kw">move </span>|allSeries| <span class="kw">match </span>allSeries {

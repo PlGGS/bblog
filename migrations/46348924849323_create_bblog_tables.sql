@@ -18,7 +18,6 @@ CREATE TABLE IF NOT EXISTS series (
 	id	INTEGER NOT NULL UNIQUE,
 	user_id	INTEGER NOT NULL,
 	name	TEXT,
-	description	TEXT,
 	created_at	TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	updated_at	TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	FOREIGN KEY(user_id) REFERENCES users(id),
@@ -91,8 +90,8 @@ INSERT INTO users (first_name, last_name, username, password_hash)
 INSERT INTO users (first_name, last_name, username, password_hash)
 	VALUES ('Blake', 'Boris', 'blakeboris', '$2b$12$m8OS9qH0XPvvK5MVTuuhMuqHKKw4.rvp53JgUGDvW/ICHn2mWDAMG');
 
-INSERT INTO series (user_id, name, description)
-	VALUES (2, 'How To', 'A Series of Tutorials');
+INSERT INTO series (user_id, name)
+	VALUES (2, 'How To');
 
 INSERT INTO posts (user_id, series_id, title, tagline, content, draft_saved, posted)
 	VALUES (2, 1, 'How to Tie a Tie', 
@@ -107,4 +106,4 @@ INSERT INTO posts (user_id, series_id, title, tagline, content, draft_saved, pos
 	- Squeeze the sides of the knot gently to create a dimple just below it.
 8. Tuck the narrow end of the tie into the loop on the back side of the wide end.
 9. Fold your collar down, and make sure that the tie is covered by the collar all the way around your neck.
-", 1, 0);
+", 1, 1);
