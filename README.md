@@ -2,11 +2,11 @@
 
 #### [Documentation](https://bblog.blakeboris.com)
 
-<!-- #### [Demo](https://www.youtube.com/watch?v=?) -->
+#### [Demo](https://youtu.be/VyRr4a-fYEw)
 
 #### Steps to build:
 1. Install cargo-leptos with `cargo install cargo-leptos` or, if necessary, `cargo install --git https://github.com/leptos-rs/cargo-leptos --locked cargo-leptos` for bleeding-edge features and deps
 2. Run `cargo leptos watch` from the bblog directory
-3. 
+
 #### Steps to deploy:
 1. `cargo leptos build --release`
