@@ -289,6 +289,7 @@ pub async fn new_post_draft(cx: Scope, series_name: String, title: String, tagli
 
     // print!("inserting into posts");
 
+    //TODO figure out why series_id is always None
     if series_id == None {
         let series_id = new_series(cx, series_name_copy).await?;
 
@@ -920,6 +921,7 @@ pub fn UserProfile(cx: Scope, current_user: Option<crate::auth::User>) -> impl I
                                 cx,
                                 <div class="user">
                                     <h1><UserFirstAndLastName id=user.id /></h1>
+                                    <h3>"Joined: "{user.created_at}</h3>
                                     //TODO make profile picture component and get it here next to their name in flex box
                                     <UserPosts id=user.id is_current_user=user_is_current_user />
                                 </div>
@@ -988,7 +990,7 @@ pub fn NewPostDraft(
 ) -> impl IntoView {
     view! {
         cx,
-        <h1>"New Post"</h1>
+        <h1>"New Draft"</h1>
         <ActionForm action=post_action>
             <UserSeriesDropDown user_id=user.id />
             <label>
@@ -1008,7 +1010,7 @@ pub fn NewPostDraft(
             <br/>
             <label>
                 "Content: "
-                <input type="text" placeholder="Post content" maxlength="32" name="content" class="auth-input" />
+                <textarea rows="20" cols="100" type="text" placeholder="Post content" name="content" class="auth-input-content" />
             </label>
             <br/>
             <br/>
@@ -1046,7 +1048,7 @@ pub fn NewPost(
             <br/>
             <label>
                 "Content: "
-                <input type="text" placeholder="Post content" maxlength="32" name="content" class="auth-input" />
+                <textarea rows="20" cols="100" type="text" placeholder="Post content" name="content" class="auth-input-content" />
             </label>
             <br/>
             <br/>
