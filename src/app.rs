@@ -16,6 +16,7 @@ cfg_if! {
             _ = GetUserPosts::register();
             _ = GetUserFromID::register();
             _ = GetUserFromUsername::register();
+            _ = NewPost::register();
             _ = NewPostDraft::register();
             _ = NewSeries::register();
             _ = DeletePost::register();
@@ -333,6 +334,91 @@ pub async fn new_post_draft(cx: Scope, series_name: String, title: String, tagli
     }
 }
 
+/// Inserts a new post into the posts table in the database with its posted flag set to false, to save it as a draft that only the current user can see
+#[server(NewPost, "/api")]
+pub async fn new_post(cx: Scope, series_name: String, title: String, tagline: String, content: String) -> Result<(), ServerFnError> {
+    let user = get_current_user(cx).await?;
+    let pool = pool(cx)?;
+
+    let user_id = match user {
+        Some(user) => user.id,
+        None => 1, //1 is guest
+    };
+
+    let series_name_copy: String = series_name.clone();
+
+    let series = create_resource(
+        cx,
+        move || (),
+        move |_| get_user_series_from_name(cx, user_id.clone(), series_name.clone()),
+    );
+
+    // println!("SERIES: ");
+    // dbg!(series.clone());
+
+    let series_id = series.read(cx).map(|series| match series {
+        Err(_e) => None,
+        Ok(series) => {
+            println!("SINGLE SERIES: ");
+            dbg!(series.clone());
+
+            Some(series.id)
+        }
+    });
+
+    // println!("SERIES ID: ");
+    // dbg!(series_id.clone());
+
+    // println!("USER ID: ");
+    // dbg!(user_id.clone());
+
+    // print!("inserting into posts");
+
+    if series_id == None {
+        let series_id = new_series(cx, series_name_copy).await?;
+
+        //I would put this in its own function but I can't figure out how to pass all the required deps and I'm running out of time
+        match sqlx::query(
+            "INSERT INTO posts (user_id, series_id, title, tagline, content, draft_saved, posted) 
+            VALUES (?, ?, ?, ?, ?, 1, 1)",
+        )
+            .bind(user_id)
+            .bind(series_id)
+            .bind(title)
+            .bind(tagline)
+            .bind(content)
+            .execute(&pool)
+            .await
+        {
+            Ok(result) => {
+                leptos_axum::redirect(cx, format!("/post/{}", result.last_insert_rowid()).as_str());
+                Ok(())
+            },
+            Err(e) => Err(ServerFnError::ServerError(e.to_string())),
+        }
+    }
+    else {
+        match sqlx::query(
+            "INSERT INTO posts (user_id, series_id, title, tagline, content, draft_saved, posted) 
+            VALUES (?, ?, ?, ?, ?, 1, 1)",
+        )
+            .bind(user_id)
+            .bind(series_id)
+            .bind(title)
+            .bind(tagline)
+            .bind(content)
+            .execute(&pool)
+            .await
+        {
+            Ok(result) => {
+                leptos_axum::redirect(cx, format!("/post/{}", result.last_insert_rowid()).as_str());
+                Ok(())
+            },
+            Err(e) => Err(ServerFnError::ServerError(e.to_string())),
+        }
+    }
+}
+
 /// Inserts a new series into the series table in the database
 #[server(NewSeries, "/api")]
 pub async fn new_series(cx: Scope, name: String) -> Result<u32, ServerFnError> {
@@ -378,6 +464,7 @@ pub fn App(cx: Scope) -> impl IntoView {
     let logout = create_server_action::<Logout>(cx);
     let signup = create_server_action::<Signup>(cx);
     let newPostDraft = create_server_action::<NewPostDraft>(cx);
+    let newPost = create_server_action::<NewPost>(cx);
 
     let current_user = create_resource(
         cx,
@@ -385,7 +472,8 @@ pub fn App(cx: Scope) -> impl IntoView {
             login.version().get(),
             signup.version().get(),
             logout.version().get(),
-            newPostDraft.version().get()
+            newPostDraft.version().get(),
+            newPost.version().get()
         )},
         move |_| get_current_user(cx),
     );
@@ -413,8 +501,9 @@ pub fn App(cx: Scope) -> impl IntoView {
                                         <A href="/login"><p>"Login"</p></A>
                                     }.into_view(cx),
                                     Ok(Some(user)) => view! {cx,
-                                        <A href="/draft"><p>"New Post"</p></A>
-                                        <A href="/settings">"Settings"</A>
+                                        <A href="/draft"><p>"New Draft"</p></A>
+                                        <A href="/post"><p>"New Post"</p></A>
+                                        <A href="/settings"><p>"Settings"</p></A>
                                         <div class="circle">
                                             <A href=format!("/u/{}", user.username)>
                                                 <img src="/profile-img.jpg" alt="profile-img"/>
@@ -479,6 +568,24 @@ pub fn App(cx: Scope) -> impl IntoView {
                         <h1>"Settings"</h1>
                         <Logout action=logout />
                     }/>
+                    <Route path="/post" view=move |cx| view! {
+                        cx,
+                        <Transition fallback=move || view! {cx, <span>"Loading..."</span>}>
+                            {move || {
+                                current_user.read(cx).map(|user| match user {
+                                    Err(e) => view! {cx,
+                                        <span>{format!("User not logged in: {}", e.to_string())}</span>
+                                    }.into_view(cx),
+                                    Ok(None) => view! {cx,
+                                        <span>"User not logged in..."</span>
+                                    }.into_view(cx),
+                                    Ok(Some(user)) => view! {cx,
+                                        <NewPost user=user post_action=newPost />
+                                    }.into_view(cx)
+                                })
+                            }}
+                        </Transition>
+                    }/>
                     <Route path="/draft" view=move |cx| view! {
                         cx,
                         <Transition fallback=move || view! {cx, <span>"Loading..."</span>}>
@@ -491,7 +598,7 @@ pub fn App(cx: Scope) -> impl IntoView {
                                         <span>"User not logged in..."</span>
                                     }.into_view(cx),
                                     Ok(Some(user)) => view! {cx,
-                                        <NewPost user=user post_action=newPostDraft />
+                                        <NewPostDraft user=user post_action=newPostDraft />
                                     }.into_view(cx)
                                 })
                             }}
@@ -780,15 +887,6 @@ pub fn UserProfileLink(cx: Scope, id: u32) -> impl IntoView {
     }
 }
 
-pub async fn user_is_current_user(cx: Scope, username: String, current_user: Option<crate::auth::User>) -> bool {
-    if current_user.is_some() {
-        current_user.unwrap().username == username
-    }
-    else {
-        false
-    }
-}
-
 /// Displays a user's information alongside their most recent posts
 #[component]
 pub fn UserProfile(cx: Scope, current_user: Option<crate::auth::User>) -> impl IntoView {
@@ -881,9 +979,9 @@ pub fn UserSeriesDropDown(cx: Scope, user_id: u32) -> impl IntoView {
     }
 }
 
-/// Provides the user with input fields to make a new Post of their own
+/// Provides the user with input fields to make a draft of a Post
 #[component]
-pub fn NewPost(
+pub fn NewPostDraft(
     cx: Scope,
     user: crate::auth::User,
     post_action: Action<NewPostDraft, Result<(), ServerFnError>>,
@@ -915,6 +1013,44 @@ pub fn NewPost(
             <br/>
             <br/>
             <button type="submit" class="button">"Save Draft"</button>
+        </ActionForm>
+    }
+}
+
+/// Provides the user with input fields to make a new Post of their own
+#[component]
+pub fn NewPost(
+    cx: Scope,
+    user: crate::auth::User,
+    post_action: Action<NewPost, Result<(), ServerFnError>>,
+) -> impl IntoView {
+    view! {
+        cx,
+        <h1>"New Post"</h1>
+        <ActionForm action=post_action>
+            <UserSeriesDropDown user_id=user.id />
+            <label>
+                "Series: "
+                <input type="text" placeholder="Post series" maxlength="64" name="series_name" class="auth-input" />
+            </label>
+            <br/>
+            <label>
+                "Title: "
+                <input type="text" placeholder="Post title" maxlength="64" name="title" class="auth-input" />
+            </label>
+            <br/>
+            <label>
+                "Tagline: "
+                <input type="text" placeholder="Catchy tagline" maxlength="256" name="tagline" class="auth-input" />
+            </label>
+            <br/>
+            <label>
+                "Content: "
+                <input type="text" placeholder="Post content" maxlength="32" name="content" class="auth-input" />
+            </label>
+            <br/>
+            <br/>
+            <button type="submit" class="button">"Post"</button>
         </ActionForm>
     }
 }
