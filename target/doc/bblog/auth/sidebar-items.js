@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["get_current_user","login","logout","signup"],"struct":["GetCurrentUser","Login","Logout","Signup","User"]};

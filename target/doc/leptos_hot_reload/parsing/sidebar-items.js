@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["block_to_primitive_expression","is_component_node","is_component_tag_name","value_to_string"]};

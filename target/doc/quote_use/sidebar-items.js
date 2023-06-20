@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"macro":["format_ident_namespaced","parse_quote_spanned_use","parse_quote_use","quote_spanned_use","quote_use"]};

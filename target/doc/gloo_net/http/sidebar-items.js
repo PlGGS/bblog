@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Method","ReferrerPolicy","RequestCache","RequestCredentials","RequestMode","RequestRedirect","ResponseType"],"struct":["AbortSignal","FormData","Headers","ObserverCallback","QueryParams","ReadableStream","Request","Response"]};

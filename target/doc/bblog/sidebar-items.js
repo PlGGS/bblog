@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["app","auth","error_template","errors","fallback","state"]};

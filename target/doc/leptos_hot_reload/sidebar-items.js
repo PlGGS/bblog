@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["HOT_RELOAD_JS"],"fn":["span_to_stable_id"],"mod":["diff","node","parsing"],"struct":["MacroInvocation","ViewMacroVisitor","ViewMacros"]};

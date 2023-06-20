@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["ErrorTemplate"],"struct":["ErrorTemplateProps","ErrorTemplatePropsBuilder"]};

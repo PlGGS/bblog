@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["Drain","Index","Indices","IntoIter","Iter","IterMut","VecList"]};
