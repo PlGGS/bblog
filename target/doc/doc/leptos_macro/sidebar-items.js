@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"attr":["component","server","slot"],"derive":["Params"],"macro":["template","view"]};

@@ -1,0 +1,69 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="A logger that logs to the browser’s console."><title>console_log - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../static.files/rustdoc-ba5701c5741a7b69.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="console_log" data-themes="" data-resource-suffix="" data-rustdoc-version="1.71.0-nightly (9ecda8de8 2023-04-30)" data-search-js="search-618e954b235f6acc.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-6f6ffb5395b17c6e.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ></div><script src="../static.files/storage-62ce34ea385b278a.js"></script><script defer src="../crates.js"></script><script defer src="../static.files/main-f0540c1d82cde29b.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="logo-container" href="../console_log/index.html"><img class="rust-logo" src="../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><h2></h2></nav><nav class="sidebar"><a class="logo-container" href="../console_log/index.html"><img class="rust-logo" src="../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><h2 class="location"><a href="#">Crate console_log</a></h2><div class="sidebar-elems"><ul class="block"><li class="version">Version 1.0.0</li><li><a id="all-types" href="all.html">All Items</a></li></ul><section><ul class="block"><li><a href="#functions">Functions</a></li></ul></section></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Crate <a class="mod" href="#">console_log</a><button id="copy-path" title="Copy item path to clipboard"><img src="../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="srclink" href="../src/console_log/lib.rs.html#1-232">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>A logger that logs to the browser’s console.</p>
+<h2 id="example"><a href="#example">Example</a></h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>log::Level;
+<span class="kw">use </span>log::info;
+<span class="kw">fn </span>main() {
+    console_log::init_with_level(Level::Debug);
+
+    <span class="macro">info!</span>(<span class="string">&quot;It works!&quot;</span>);
+
+    <span class="comment">// ...
+</span>}</code></pre></div>
+<h2 id="log-levels"><a href="#log-levels">Log Levels</a></h2>
+<p>Rust’s log levels map to the browser’s console log in the following way.</p>
+<div><table><thead><tr><th>Rust</th><th>Web Console</th></tr></thead><tbody>
+<tr><td><code>trace!()</code></td><td><code>console.debug()</code></td></tr>
+<tr><td><code>debug!()</code></td><td><code>console.log()</code></td></tr>
+<tr><td><code>info!()</code></td><td><code>console.info()</code></td></tr>
+<tr><td><code>warn!()</code></td><td><code>console.warn()</code></td></tr>
+<tr><td><code>error!()</code></td><td><code>console.error()</code></td></tr>
+</tbody></table>
+</div><h2 id="getting-fancy"><a href="#getting-fancy">Getting Fancy</a></h2>
+<p>The feature set provided by this crate is intentionally very basic. If you need more flexible
+formatting of log messages (timestamps, file and line info, etc.) this crate can be used with
+the <a href="https://docs.rs/fern"><code>fern</code></a> logger via the <a href="fn.log.html"><code>console_log::log</code></a> function.</p>
+<h3 id="colors"><a href="#colors">Colors</a></h3>
+<p>The <code>&quot;color&quot;</code> feature adds styling to the log messages.</p>
+<p><code>Cargo.toml</code></p>
+<div class="example-wrap"><pre class="language-toml"><code>console_log = { version = &quot;0.2&quot;, features = [&quot;color&quot;] }
+</code></pre></div>
+<p>The styled log messages will be rendered as follows:</p>
+<p><img src="img/log_messages_styled.png" alt="Styled log messages" /></p>
+<h2 id="code-size"><a href="#code-size">Code Size</a></h2>
+<p><a href="https://github.com/rustwasm/twiggy">Twiggy</a> reports this library adding about 180Kb to the size of a minimal wasm binary in a
+debug build. If you want to avoid this, mark the library as optional and conditionally
+initialize it in your code for non-release builds.</p>
+<p><code>Cargo.toml</code></p>
+<div class="example-wrap"><pre class="language-toml"><code>[dependencies]
+cfg-if = &quot;0.1&quot;
+log = &quot;0.4&quot;
+console_log = { version = &quot;0.2&quot;, optional = true }
+
+[features]
+default = [&quot;console_log&quot;]
+</code></pre></div>
+<p><code>lib.rs</code></p>
+
+<div class="example-wrap ignore"><a href="#" class="tooltip" title="This example is not tested">ⓘ</a><pre class="rust rust-example-rendered"><code><span class="kw">use </span>wasm_bindgen::prelude::<span class="kw-2">*</span>;
+<span class="kw">use </span>cfg_if::cfg_if;
+
+<span class="macro">cfg_if! </span>{
+    <span class="kw">if </span><span class="attr">#[cfg(feature = <span class="string">&quot;console_log&quot;</span>)] </span>{
+        <span class="kw">fn </span>init_log() {
+            <span class="kw">use </span>log::Level;
+            console_log::init_with_level(Level::Trace).expect(<span class="string">&quot;error initializing log&quot;</span>);
+        }
+    } <span class="kw">else </span>{
+        <span class="kw">fn </span>init_log() {}
+    }
+}
+
+<span class="attr">#[wasm_bindgen]
+</span><span class="kw">pub fn </span>main() {
+    init_log();
+    <span class="comment">// ...
+</span>}</code></pre></div>
+<h2 id="limitations"><a href="#limitations">Limitations</a></h2>
+<p>The file and line number information associated with the log messages reports locations from
+the shims generated by <code>wasm-bindgen</code>, not the location of the logger call.</p>
+</div></details><h2 id="functions" class="small-section-header"><a href="#functions">Functions</a></h2><ul class="item-table"><li><div class="item-name"><a class="fn" href="fn.init.html" title="fn console_log::init">init</a></div><div class="desc docblock-short">Initializes the global logger with <code>max_log_level</code> set to <code>Level::Info</code> (a sensible default).</div></li><li><div class="item-name"><a class="fn" href="fn.init_with_level.html" title="fn console_log::init_with_level">init_with_level</a></div><div class="desc docblock-short">Initializes the global logger setting <code>max_log_level</code> to the given value.</div></li><li><div class="item-name"><a class="fn" href="fn.log.html" title="fn console_log::log">log</a></div><div class="desc docblock-short">Print a <code>log::Record</code> to the browser’s console at the appropriate level.</div></li></ul></section></div></main></body></html>

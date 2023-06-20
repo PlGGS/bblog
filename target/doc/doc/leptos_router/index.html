@@ -1,0 +1,228 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Leptos Router"><title>leptos_router - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../static.files/rustdoc-ba5701c5741a7b69.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="leptos_router" data-themes="" data-resource-suffix="" data-rustdoc-version="1.71.0-nightly (9ecda8de8 2023-04-30)" data-search-js="search-618e954b235f6acc.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-6f6ffb5395b17c6e.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ></div><script src="../static.files/storage-62ce34ea385b278a.js"></script><script defer src="../crates.js"></script><script defer src="../static.files/main-f0540c1d82cde29b.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="logo-container" href="../leptos_router/index.html"><img class="rust-logo" src="../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><h2></h2></nav><nav class="sidebar"><a class="logo-container" href="../leptos_router/index.html"><img class="rust-logo" src="../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><h2 class="location"><a href="#">Crate leptos_router</a></h2><div class="sidebar-elems"><ul class="block"><li class="version">Version 0.3.0</li><li><a id="all-types" href="all.html">All Items</a></li></ul><section><ul class="block"><li><a href="#macros">Macros</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li><li><a href="#functions">Functions</a></li></ul></section></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Crate <a class="mod" href="#">leptos_router</a><button id="copy-path" title="Copy item path to clipboard"><img src="../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="srclink" href="../src/leptos_router/lib.rs.html#1-206">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><h2 id="leptos-router"><a href="#leptos-router">Leptos Router</a></h2>
+<p>Leptos Router is a router and state management tool for web applications
+written in Rust using the <a href="https://github.com/leptos-rs/leptos">Leptos</a> web framework.
+It is ”isomorphic,” i.e., it can be used for client-side applications/single-page
+apps (SPAs), server-side rendering/multi-page apps (MPAs), or to synchronize
+state between the two.</p>
+<h3 id="philosophy"><a href="#philosophy">Philosophy</a></h3>
+<p>Leptos Router is built on a few simple principles:</p>
+<ol>
+<li>
+<p><strong>URL drives state.</strong> For web applications, the URL should be the ultimate
+source of truth for most of your app’s state. (It’s called a <strong>Universal
+Resource Locator</strong> for a reason!)</p>
+</li>
+<li>
+<p><strong>Nested routing.</strong> A URL can match multiple routes that exist in a nested tree
+and are rendered by different components. This means you can navigate between siblings
+in this tree without re-rendering or triggering any change in the parent routes.</p>
+</li>
+<li>
+<p><strong>Progressive enhancement.</strong> The <a href="fn.A.html" title="fn leptos_router::A">A</a> and <a href="fn.Form.html" title="fn leptos_router::Form">Form</a> components resolve any relative
+nested routes, render actual <code>&lt;a&gt;</code> and <code>&lt;form&gt;</code> elements, and (when possible)
+upgrading them to handle those navigations with client-side routing. If you’re using
+them with server-side rendering (with or without hydration), they just work,
+whether JS/WASM have loaded or not.</p>
+</li>
+</ol>
+<h3 id="example"><a href="#example">Example</a></h3>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code> 
+<span class="kw">use </span>leptos::<span class="kw-2">*</span>;
+<span class="kw">use </span>leptos_router::<span class="kw-2">*</span>;
+
+<span class="attr">#[component]
+</span><span class="kw">pub fn </span>RouterExample(cx: Scope) -&gt; <span class="kw">impl </span>IntoView {
+  <span class="macro">view! </span>{
+    cx,
+    &lt;div id=<span class="string">&quot;root&quot;</span>&gt;
+      <span class="comment">// we wrap the whole app in a &lt;Router/&gt; to allow client-side navigation
+      // from our nav links below
+      </span>&lt;Router&gt;
+        <span class="comment">// &lt;nav&gt; and &lt;main&gt; will show on every route
+        </span>&lt;nav&gt;
+          <span class="comment">// LR will enhance the active &lt;a&gt; link with the [aria-current] attribute
+          // we can use this for styling them with CSS like `[aria-current] { font-weight: bold; }`
+          </span>&lt;A href=<span class="string">&quot;contacts&quot;</span>&gt;<span class="string">&quot;Contacts&quot;</span>&lt;/A&gt;
+          <span class="comment">// But we can also use a normal class attribute like it is a normal component
+          </span>&lt;A href=<span class="string">&quot;settings&quot; </span>class=<span class="string">&quot;my-class&quot;</span>&gt;<span class="string">&quot;Settings&quot;</span>&lt;/A&gt;
+          <span class="comment">// It also supports signals!
+          </span>&lt;A href=<span class="string">&quot;about&quot; </span>class=<span class="kw">move </span>|| <span class="string">&quot;my-class&quot;</span>&gt;<span class="string">&quot;About&quot;</span>&lt;/A&gt;
+        &lt;/nav&gt;
+        &lt;main&gt;
+          <span class="comment">// &lt;Routes/&gt; both defines our routes and shows them on the page
+          </span>&lt;Routes&gt;
+            <span class="comment">// our root route: the contact list is always shown
+            </span>&lt;Route
+              path=<span class="string">&quot;&quot;
+              </span>view=<span class="kw">move </span>|cx| <span class="macro">view! </span>{ cx,  &lt;ContactList/&gt; }
+            &gt;
+              <span class="comment">// users like /gbj or /bob
+              </span>&lt;Route
+                path=<span class="string">&quot;:id&quot;
+                </span>view=<span class="kw">move </span>|cx| <span class="macro">view! </span>{ cx,  &lt;Contact/&gt; }
+              /&gt;
+              <span class="comment">// a fallback if the /:id segment is missing from the URL
+              </span>&lt;Route
+                path=<span class="string">&quot;&quot;
+                </span>view=<span class="kw">move </span>|<span class="kw">_</span>| <span class="macro">view! </span>{ cx,  &lt;p class=<span class="string">&quot;contact&quot;</span>&gt;<span class="string">&quot;Select a contact.&quot;</span>&lt;/p&gt; }
+              /&gt;
+            &lt;/Route&gt;
+            <span class="comment">// LR will automatically use this for /about, not the /:id match above
+            </span>&lt;Route
+              path=<span class="string">&quot;about&quot;
+              </span>view=<span class="kw">move </span>|cx| <span class="macro">view! </span>{ cx,  &lt;About/&gt; }
+            /&gt;
+          &lt;/Routes&gt;
+        &lt;/main&gt;
+      &lt;/Router&gt;
+    &lt;/div&gt;
+  }
+}
+
+<span class="kw">type </span>ContactSummary = (); <span class="comment">// TODO!
+</span><span class="kw">type </span>Contact = (); <span class="comment">// TODO!()
+
+// contact_data reruns whenever the :id param changes
+</span><span class="kw">async fn </span>contact_data(id: String) -&gt; Contact {
+  <span class="macro">todo!</span>()
+}
+
+<span class="comment">// contact_list_data *doesn&#39;t* rerun when the :id changes,
+// because that param is nested lower than the &lt;ContactList/&gt; route
+</span><span class="kw">async fn </span>contact_list_data() -&gt; Vec&lt;ContactSummary&gt; {
+  <span class="macro">todo!</span>()
+}
+
+<span class="attr">#[component]
+</span><span class="kw">fn </span>ContactList(cx: Scope) -&gt; <span class="kw">impl </span>IntoView {
+  <span class="comment">// loads the contact list data once; doesn&#39;t reload when nested routes change
+  </span><span class="kw">let </span>contacts = create_resource(cx, || (), |<span class="kw">_</span>| contact_list_data());
+  <span class="macro">view! </span>{
+    cx,
+    &lt;div&gt;
+      <span class="comment">// show the contacts
+      </span>&lt;ul&gt;
+        {<span class="kw">move </span>|| contacts.read(cx).map(|contacts| <span class="macro">view! </span>{ cx, &lt;li&gt;<span class="string">&quot;todo contact info&quot;</span>&lt;/li&gt; } )}
+      &lt;/ul&gt;
+
+      <span class="comment">// insert the nested child route here
+      </span>&lt;Outlet/&gt;
+    &lt;/div&gt;
+  }
+}
+
+<span class="attr">#[component]
+</span><span class="kw">fn </span>Contact(cx: Scope) -&gt; <span class="kw">impl </span>IntoView {
+  <span class="kw">let </span>params = use_params_map(cx);
+  <span class="kw">let </span>data = create_resource(
+    cx,
+    <span class="kw">move </span>|| params.with(|p| p.get(<span class="string">&quot;id&quot;</span>).cloned().unwrap_or_default()),
+    <span class="kw">move </span>|id| contact_data(id)
+  );
+  <span class="macro">todo!</span>()
+}
+
+<span class="attr">#[component]
+</span><span class="kw">fn </span>About(cx: Scope) -&gt; <span class="kw">impl </span>IntoView {
+  <span class="macro">todo!</span>()
+}</code></pre></div>
+<h3 id="module-route-definitions"><a href="#module-route-definitions">Module Route Definitions</a></h3>
+<p>Routes can also be modularized and nested by defining them in separate components, which can be
+located in and imported from other modules. Components that return <code>&lt;Route/&gt;</code> should be marked
+<code>#[component(transparent)]</code>, as in this example:</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>leptos::<span class="kw-2">*</span>;
+<span class="kw">use </span>leptos_router::<span class="kw-2">*</span>;
+
+<span class="attr">#[component]
+</span><span class="kw">pub fn </span>App(cx: Scope) -&gt; <span class="kw">impl </span>IntoView {
+  <span class="macro">view! </span>{ cx,
+    &lt;Router&gt;
+      &lt;Routes&gt;
+        &lt;Route path=<span class="string">&quot;/&quot; </span>view=<span class="kw">move </span>|cx| {
+          <span class="macro">view! </span>{ cx, <span class="string">&quot;-&gt; /&quot; </span>}
+        }/&gt;
+        &lt;ExternallyDefinedRoute/&gt;
+      &lt;/Routes&gt;
+    &lt;/Router&gt;
+  }
+}
+
+<span class="comment">// `transparent` here marks the component as returning data (a RouteDefinition), not a view
+</span><span class="attr">#[component(transparent)]
+</span><span class="kw">pub fn </span>ExternallyDefinedRoute(cx: Scope) -&gt; <span class="kw">impl </span>IntoView {
+  <span class="macro">view! </span>{ cx,
+    &lt;Route path=<span class="string">&quot;/some-area&quot; </span>view=<span class="kw">move </span>|cx| {
+      <span class="macro">view! </span>{ cx, &lt;div&gt;
+        &lt;h2&gt;<span class="string">&quot;Some Area&quot;</span>&lt;/h2&gt;
+        &lt;Outlet/&gt;
+      &lt;/div&gt; }
+    }&gt;
+      &lt;Route path=<span class="string">&quot;/path-a/:id&quot; </span>view=<span class="kw">move </span>|cx| {
+        <span class="macro">view! </span>{ cx, &lt;p&gt;<span class="string">&quot;Path A&quot;</span>&lt;/p&gt; }
+      }/&gt;
+      &lt;Route path=<span class="string">&quot;/path-b/:id&quot; </span>view=<span class="kw">move </span>|cx| {
+        <span class="macro">view! </span>{ cx, &lt;p&gt;<span class="string">&quot;Path B&quot;</span>&lt;/p&gt; }
+      }/&gt;
+    &lt;/Route&gt;
+  }
+}</code></pre></div>
+<h2 id="feature-flags"><a href="#feature-flags">Feature Flags</a></h2>
+<ul>
+<li><code>csr</code> Client-side rendering: Generate DOM nodes in the browser</li>
+<li><code>ssr</code> Server-side rendering: Generate an HTML string (typically on the server)</li>
+<li><code>hydrate</code> Hydration: use this to add interactivity to an SSRed Leptos app</li>
+<li><code>stable</code> By default, Leptos requires <code>nightly</code> Rust, which is what allows the ergonomics
+of calling signals as functions. Enable this feature to support <code>stable</code> Rust.</li>
+</ul>
+<p><strong>Important Note:</strong> You must enable one of <code>csr</code>, <code>hydrate</code>, or <code>ssr</code> to tell Leptos
+which mode your app is operating in.</p>
+</div></details><h2 id="reexports" class="small-section-header"><a href="#reexports">Re-exports</a></h2><ul class="item-table"><li><div class="item-name"><code>pub use matching::*;</code></div></li></ul><h2 id="macros" class="small-section-header"><a href="#macros">Macros</a></h2><ul class="item-table"><li><div class="item-name"><a class="macro" href="macro.params_map.html" title="macro leptos_router::params_map">params_map</a></div><div class="desc docblock-short">A declarative way of creating a <a href="struct.ParamsMap.html" title="struct leptos_router::ParamsMap">ParamsMap</a>.</div></li></ul><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2><ul class="item-table"><li><div class="item-name"><a class="struct" href="struct.AProps.html" title="struct leptos_router::AProps">AProps</a></div><div class="desc docblock-short">Props for the <a href="fn.A.html" title="fn leptos_router::A"><code>A</code></a> component.</div></li><li><div class="item-name"><a class="struct" href="struct.APropsBuilder.html" title="struct leptos_router::APropsBuilder">APropsBuilder</a></div><div class="desc docblock-short">Builder for <a href="struct.AProps.html" title="struct leptos_router::AProps"><code>AProps</code></a> instances.</div></li><li><div class="item-name"><a class="struct" href="struct.ActionFormProps.html" title="struct leptos_router::ActionFormProps">ActionFormProps</a></div><div class="desc docblock-short">Props for the <a href="fn.ActionForm.html" title="fn leptos_router::ActionForm"><code>ActionForm</code></a> component.</div></li><li><div class="item-name"><a class="struct" href="struct.ActionFormPropsBuilder.html" title="struct leptos_router::ActionFormPropsBuilder">ActionFormPropsBuilder</a></div><div class="desc docblock-short">Builder for <a href="struct.ActionFormProps.html" title="struct leptos_router::ActionFormProps"><code>ActionFormProps</code></a> instances.</div></li><li><div class="item-name"><a class="struct" href="struct.AnimatedOutletProps.html" title="struct leptos_router::AnimatedOutletProps">AnimatedOutletProps</a></div><div class="desc docblock-short">Props for the <a href="fn.AnimatedOutlet.html" title="fn leptos_router::AnimatedOutlet"><code>AnimatedOutlet</code></a> component.</div></li><li><div class="item-name"><a class="struct" href="struct.AnimatedOutletPropsBuilder.html" title="struct leptos_router::AnimatedOutletPropsBuilder">AnimatedOutletPropsBuilder</a></div><div class="desc docblock-short">Builder for <a href="struct.AnimatedOutletProps.html" title="struct leptos_router::AnimatedOutletProps"><code>AnimatedOutletProps</code></a> instances.</div></li><li><div class="item-name"><a class="struct" href="struct.AnimatedRoutesProps.html" title="struct leptos_router::AnimatedRoutesProps">AnimatedRoutesProps</a></div><div class="desc docblock-short">Props for the <a href="fn.AnimatedRoutes.html" title="fn leptos_router::AnimatedRoutes"><code>AnimatedRoutes</code></a> component.</div></li><li><div class="item-name"><a class="struct" href="struct.AnimatedRoutesPropsBuilder.html" title="struct leptos_router::AnimatedRoutesPropsBuilder">AnimatedRoutesPropsBuilder</a></div><div class="desc docblock-short">Builder for <a href="struct.AnimatedRoutesProps.html" title="struct leptos_router::AnimatedRoutesProps"><code>AnimatedRoutesProps</code></a> instances.</div></li><li><div class="item-name"><a class="struct" href="struct.BrowserIntegration.html" title="struct leptos_router::BrowserIntegration">BrowserIntegration</a></div><div class="desc docblock-short">The default integration when you are running in the browser, which uses
+the <a href="https://developer.mozilla.org/en-US/docs/Web/API/History"><code>History API</code></a>.</div></li><li><div class="item-name"><a class="struct" href="struct.FormProps.html" title="struct leptos_router::FormProps">FormProps</a></div><div class="desc docblock-short">Props for the <a href="fn.Form.html" title="fn leptos_router::Form"><code>Form</code></a> component.</div></li><li><div class="item-name"><a class="struct" href="struct.FormPropsBuilder.html" title="struct leptos_router::FormPropsBuilder">FormPropsBuilder</a></div><div class="desc docblock-short">Builder for <a href="struct.FormProps.html" title="struct leptos_router::FormProps"><code>FormProps</code></a> instances.</div></li><li><div class="item-name"><a class="struct" href="struct.Location.html" title="struct leptos_router::Location">Location</a></div><div class="desc docblock-short">A reactive description of the current URL, containing equivalents to the local parts of
+the browser’s <a href="https://developer.mozilla.org/en-US/docs/Web/API/Location"><code>Location</code></a>.</div></li><li><div class="item-name"><a class="struct" href="struct.LocationChange.html" title="struct leptos_router::LocationChange">LocationChange</a></div><div class="desc docblock-short">A description of a navigation.</div></li><li><div class="item-name"><a class="struct" href="struct.MultiActionFormProps.html" title="struct leptos_router::MultiActionFormProps">MultiActionFormProps</a></div><div class="desc docblock-short">Props for the <a href="fn.MultiActionForm.html" title="fn leptos_router::MultiActionForm"><code>MultiActionForm</code></a> component.</div></li><li><div class="item-name"><a class="struct" href="struct.MultiActionFormPropsBuilder.html" title="struct leptos_router::MultiActionFormPropsBuilder">MultiActionFormPropsBuilder</a></div><div class="desc docblock-short">Builder for <a href="struct.MultiActionFormProps.html" title="struct leptos_router::MultiActionFormProps"><code>MultiActionFormProps</code></a> instances.</div></li><li><div class="item-name"><a class="struct" href="struct.NavigateOptions.html" title="struct leptos_router::NavigateOptions">NavigateOptions</a></div><div class="desc docblock-short">Options that can be used to configure a navigation. Used with <a href="fn.use_navigate.html" title="fn leptos_router::use_navigate">use_navigate</a>.</div></li><li><div class="item-name"><a class="struct" href="struct.OutletProps.html" title="struct leptos_router::OutletProps">OutletProps</a></div><div class="desc docblock-short">Props for the <a href="fn.Outlet.html" title="fn leptos_router::Outlet"><code>Outlet</code></a> component.</div></li><li><div class="item-name"><a class="struct" href="struct.OutletPropsBuilder.html" title="struct leptos_router::OutletPropsBuilder">OutletPropsBuilder</a></div><div class="desc docblock-short">Builder for <a href="struct.OutletProps.html" title="struct leptos_router::OutletProps"><code>OutletProps</code></a> instances.</div></li><li><div class="item-name"><a class="struct" href="struct.ParamsMap.html" title="struct leptos_router::ParamsMap">ParamsMap</a></div><div class="desc docblock-short">A key-value map of the current named route params and their values.</div></li><li><div class="item-name"><a class="struct" href="struct.PossibleBranchContext.html" title="struct leptos_router::PossibleBranchContext">PossibleBranchContext</a></div><div class="desc docblock-short">Context to contain all possible routes.</div></li><li><div class="item-name"><a class="struct" href="struct.ProtectedRouteProps.html" title="struct leptos_router::ProtectedRouteProps">ProtectedRouteProps</a></div><div class="desc docblock-short">Props for the <a href="fn.ProtectedRoute.html" title="fn leptos_router::ProtectedRoute"><code>ProtectedRoute</code></a> component.</div></li><li><div class="item-name"><a class="struct" href="struct.ProtectedRoutePropsBuilder.html" title="struct leptos_router::ProtectedRoutePropsBuilder">ProtectedRoutePropsBuilder</a></div><div class="desc docblock-short">Builder for <a href="struct.ProtectedRouteProps.html" title="struct leptos_router::ProtectedRouteProps"><code>ProtectedRouteProps</code></a> instances.</div></li><li><div class="item-name"><a class="struct" href="struct.RedirectProps.html" title="struct leptos_router::RedirectProps">RedirectProps</a></div><div class="desc docblock-short">Props for the <a href="fn.Redirect.html" title="fn leptos_router::Redirect"><code>Redirect</code></a> component.</div></li><li><div class="item-name"><a class="struct" href="struct.RedirectPropsBuilder.html" title="struct leptos_router::RedirectPropsBuilder">RedirectPropsBuilder</a></div><div class="desc docblock-short">Builder for <a href="struct.RedirectProps.html" title="struct leptos_router::RedirectProps"><code>RedirectProps</code></a> instances.</div></li><li><div class="item-name"><a class="struct" href="struct.RouteContext.html" title="struct leptos_router::RouteContext">RouteContext</a></div><div class="desc docblock-short">Context type that contains information about the current, matched route.</div></li><li><div class="item-name"><a class="struct" href="struct.RouteData.html" title="struct leptos_router::RouteData">RouteData</a></div></li><li><div class="item-name"><a class="struct" href="struct.RouteDefinition.html" title="struct leptos_router::RouteDefinition">RouteDefinition</a></div><div class="desc docblock-short">Defines a single route in a nested route tree. This is the return
+type of the <a href="fn.Route.html" title="fn leptos_router::Route"><code>&lt;Route/&gt;</code></a> component, but can also be
+used to build your own configuration-based or filesystem-based routing.</div></li><li><div class="item-name"><a class="struct" href="struct.RouteListing.html" title="struct leptos_router::RouteListing">RouteListing</a></div><div class="desc docblock-short">A route that this application can serve.</div></li><li><div class="item-name"><a class="struct" href="struct.RouteProps.html" title="struct leptos_router::RouteProps">RouteProps</a></div><div class="desc docblock-short">Props for the <a href="fn.Route.html" title="fn leptos_router::Route"><code>Route</code></a> component.</div></li><li><div class="item-name"><a class="struct" href="struct.RoutePropsBuilder.html" title="struct leptos_router::RoutePropsBuilder">RoutePropsBuilder</a></div><div class="desc docblock-short">Builder for <a href="struct.RouteProps.html" title="struct leptos_router::RouteProps"><code>RouteProps</code></a> instances.</div></li><li><div class="item-name"><a class="struct" href="struct.RouterContext.html" title="struct leptos_router::RouterContext">RouterContext</a></div><div class="desc docblock-short">Context type that contains information about the current router state.</div></li><li><div class="item-name"><a class="struct" href="struct.RouterIntegrationContext.html" title="struct leptos_router::RouterIntegrationContext">RouterIntegrationContext</a></div><div class="desc docblock-short">The wrapper type that the <a href="fn.Router.html" title="fn leptos_router::Router">Router</a> uses to interact with a <a href="trait.History.html" title="trait leptos_router::History">History</a>.
+This is automatically provided in the browser. For the server, it should be provided
+as a context. Be sure that it can survive conversion to a URL in the browser.</div></li><li><div class="item-name"><a class="struct" href="struct.RouterProps.html" title="struct leptos_router::RouterProps">RouterProps</a></div><div class="desc docblock-short">Props for the <a href="fn.Router.html" title="fn leptos_router::Router"><code>Router</code></a> component.</div></li><li><div class="item-name"><a class="struct" href="struct.RouterPropsBuilder.html" title="struct leptos_router::RouterPropsBuilder">RouterPropsBuilder</a></div><div class="desc docblock-short">Builder for <a href="struct.RouterProps.html" title="struct leptos_router::RouterProps"><code>RouterProps</code></a> instances.</div></li><li><div class="item-name"><a class="struct" href="struct.RoutesProps.html" title="struct leptos_router::RoutesProps">RoutesProps</a></div><div class="desc docblock-short">Props for the <a href="fn.Routes.html" title="fn leptos_router::Routes"><code>Routes</code></a> component.</div></li><li><div class="item-name"><a class="struct" href="struct.RoutesPropsBuilder.html" title="struct leptos_router::RoutesPropsBuilder">RoutesPropsBuilder</a></div><div class="desc docblock-short">Builder for <a href="struct.RoutesProps.html" title="struct leptos_router::RoutesProps"><code>RoutesProps</code></a> instances.</div></li><li><div class="item-name"><a class="struct" href="struct.RoutingProgressProps.html" title="struct leptos_router::RoutingProgressProps">RoutingProgressProps</a></div><div class="desc docblock-short">Props for the <a href="fn.RoutingProgress.html" title="fn leptos_router::RoutingProgress"><code>RoutingProgress</code></a> component.</div></li><li><div class="item-name"><a class="struct" href="struct.RoutingProgressPropsBuilder.html" title="struct leptos_router::RoutingProgressPropsBuilder">RoutingProgressPropsBuilder</a></div><div class="desc docblock-short">Builder for <a href="struct.RoutingProgressProps.html" title="struct leptos_router::RoutingProgressProps"><code>RoutingProgressProps</code></a> instances.</div></li><li><div class="item-name"><a class="struct" href="struct.ServerIntegration.html" title="struct leptos_router::ServerIntegration">ServerIntegration</a></div><div class="desc docblock-short">A generic router integration for the server side.</div></li><li><div class="item-name"><a class="struct" href="struct.ServerRedirectFunction.html" title="struct leptos_router::ServerRedirectFunction">ServerRedirectFunction</a></div><div class="desc docblock-short">Wrapping type for a function provided as context to allow for
+server-side redirects. See <a href="fn.provide_server_redirect.html" title="fn leptos_router::provide_server_redirect">provide_server_redirect</a>
+and <a href="fn.Redirect.html" title="fn leptos_router::Redirect">Redirect</a>.</div></li><li><div class="item-name"><a class="struct" href="struct.State.html" title="struct leptos_router::State">State</a></div></li><li><div class="item-name"><a class="struct" href="struct.Url.html" title="struct leptos_router::Url">Url</a></div></li></ul><h2 id="enums" class="small-section-header"><a href="#enums">Enums</a></h2><ul class="item-table"><li><div class="item-name"><a class="enum" href="enum.Method.html" title="enum leptos_router::Method">Method</a></div><div class="desc docblock-short">Represents an HTTP method that can be handled by this route.</div></li><li><div class="item-name"><a class="enum" href="enum.NavigationError.html" title="enum leptos_router::NavigationError">NavigationError</a></div><div class="desc docblock-short">An error that occurs during navigation.</div></li><li><div class="item-name"><a class="enum" href="enum.ParamsError.html" title="enum leptos_router::ParamsError">ParamsError</a></div><div class="desc docblock-short">Errors that can occur while parsing params using <a href="trait.Params.html" title="trait leptos_router::Params">Params</a>.</div></li><li><div class="item-name"><a class="enum" href="enum.SsrMode.html" title="enum leptos_router::SsrMode">SsrMode</a></div><div class="desc docblock-short">Indicates which rendering mode should be used for this route during server-side rendering.</div></li></ul><h2 id="traits" class="small-section-header"><a href="#traits">Traits</a></h2><ul class="item-table"><li><div class="item-name"><a class="trait" href="trait.FromFormData.html" title="trait leptos_router::FromFormData">FromFormData</a></div><div class="desc docblock-short">Tries to deserialize a type from form data. This can be used for client-side
+validation during form submission.</div></li><li><div class="item-name"><a class="trait" href="trait.History.html" title="trait leptos_router::History">History</a></div><div class="desc docblock-short">The <a href="fn.Router.html" title="fn leptos_router::Router">Router</a> relies on a <a href="struct.RouterIntegrationContext.html" title="struct leptos_router::RouterIntegrationContext">RouterIntegrationContext</a>, which tells the router
+how to find things like the current URL, and how to navigate to a new page. The <a href="trait.History.html" title="trait leptos_router::History">History</a> trait
+can be implemented on any type to provide this information.</div></li><li><div class="item-name"><a class="trait" href="trait.IntoParam.html" title="trait leptos_router::IntoParam">IntoParam</a></div></li><li><div class="item-name"><a class="trait" href="trait.Params.html" title="trait leptos_router::Params">Params</a></div><div class="desc docblock-short">A simple method of deserializing key-value data (like route params or URL search)
+into a concrete data type. <code>Self</code> should typically be a struct in which
+each field’s type implements <a href="https://doc.rust-lang.org/nightly/core/str/traits/trait.FromStr.html" title="trait core::str::traits::FromStr">FromStr</a>.</div></li><li><div class="item-name"><a class="trait" href="trait.ToHref.html" title="trait leptos_router::ToHref">ToHref</a></div><div class="desc docblock-short">Describes a value that is either a static or a reactive URL, i.e.,
+a <a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html" title="struct alloc::string::String">String</a>, a <a href="https://doc.rust-lang.org/nightly/std/primitive.str.html" title="primitive str">&amp;str</a>, or a reactive <code>Fn() -&gt; String</code>.</div></li></ul><h2 id="functions" class="small-section-header"><a href="#functions">Functions</a></h2><ul class="item-table"><li><div class="item-name"><a class="fn" href="fn.A.html" title="fn leptos_router::A">A</a></div><div class="desc docblock-short">An HTML <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a"><code>a</code></a>
+progressively enhanced to use client-side routing.
+Client-side routing also works with ordinary HTML <code>&lt;a&gt;</code> tags, but <code>&lt;A&gt;</code> does two additional things:</div></li><li><div class="item-name"><a class="fn" href="fn.ActionForm.html" title="fn leptos_router::ActionForm">ActionForm</a></div><div class="desc docblock-short">Automatically turns a server <a href="../leptos_server/action/struct.Action.html" title="struct leptos_server::action::Action">Action</a> into an HTML
+<a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/form"><code>form</code></a>
+progressively enhanced to use client-side routing.</div></li><li><div class="item-name"><a class="fn" href="fn.AnimatedOutlet.html" title="fn leptos_router::AnimatedOutlet">AnimatedOutlet</a></div><div class="desc docblock-short">Displays the child route nested in a parent route, allowing you to control exactly where
+that child route is displayed. Renders nothing if there is no nested child.</div></li><li><div class="item-name"><a class="fn" href="fn.AnimatedRoutes.html" title="fn leptos_router::AnimatedRoutes">AnimatedRoutes</a></div><div class="desc docblock-short">Contains route definitions and manages the actual routing process, with animated transitions
+between routes.
+You should locate the <code>&lt;AnimatedRoutes/&gt;</code> component wherever on the page you want the routes to appear.</div></li><li><div class="item-name"><a class="fn" href="fn.Form.html" title="fn leptos_router::Form">Form</a></div><div class="desc docblock-short">An HTML <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/form"><code>form</code></a> progressively
+enhanced to use client-side routing.</div></li><li><div class="item-name"><a class="fn" href="fn.MultiActionForm.html" title="fn leptos_router::MultiActionForm">MultiActionForm</a></div><div class="desc docblock-short">Automatically turns a server <a href="../leptos_server/multi_action/struct.MultiAction.html" title="struct leptos_server::multi_action::MultiAction">MultiAction</a> into an HTML
+<a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Element/form"><code>form</code></a>
+progressively enhanced to use client-side routing.</div></li><li><div class="item-name"><a class="fn" href="fn.Outlet.html" title="fn leptos_router::Outlet">Outlet</a></div><div class="desc docblock-short">Displays the child route nested in a parent route, allowing you to control exactly where
+that child route is displayed. Renders nothing if there is no nested child.</div></li><li><div class="item-name"><a class="fn" href="fn.ProtectedRoute.html" title="fn leptos_router::ProtectedRoute">ProtectedRoute</a></div><div class="desc docblock-short">Describes a route that is guarded by a certain condition. This works the same way as
+<a href="fn.Route.html" title="fn leptos_router::Route"><code>&lt;Route/&gt;</code></a>, except that if the <code>condition</code> function evaluates to <code>false</code>, it
+redirects to <code>redirect_path</code> instead of displaying its <code>view</code>.</div></li><li><div class="item-name"><a class="fn" href="fn.Redirect.html" title="fn leptos_router::Redirect">Redirect</a></div><div class="desc docblock-short">Redirects the user to a new URL, whether on the client side or on the server
+side. If rendered on the server, this sets a <code>302</code> status code and sets a <code>Location</code>
+header. If rendered in the browser, it uses client-side navigation to redirect.
+In either case, it resolves the route relative to the current route. (To use
+an absolute path, prefix it with <code>/</code>).
+<strong>Note</strong>: Support for server-side redirects is provided by the server framework
+integrations (<code>leptos_actix</code>, <code>leptos_axum</code>, and <code>leptos_viz</code>). If you’re not using one of those
+integrations, you should manually provide a way of redirecting on the server
+using <a href="fn.provide_server_redirect.html" title="fn leptos_router::provide_server_redirect">provide_server_redirect</a>.</div></li><li><div class="item-name"><a class="fn" href="fn.Route.html" title="fn leptos_router::Route">Route</a></div><div class="desc docblock-short">Describes a portion of the nested layout of the app, specifying the route it should match,
+the element it should display, and data that should be loaded alongside the route.</div></li><li><div class="item-name"><a class="fn" href="fn.Router.html" title="fn leptos_router::Router">Router</a></div><div class="desc docblock-short">Provides for client-side and server-side routing. This should usually be somewhere near
+the root of the application.</div></li><li><div class="item-name"><a class="fn" href="fn.Routes.html" title="fn leptos_router::Routes">Routes</a></div><div class="desc docblock-short">Contains route definitions and manages the actual routing process.
+You should locate the <code>&lt;Routes/&gt;</code> component wherever on the page you want the routes to appear.
+<strong>Note:</strong> Your application should only include one <code>&lt;Routes/&gt;</code> or <code>&lt;AnimatedRoutes/&gt;</code> component.</div></li><li><div class="item-name"><a class="fn" href="fn.RoutingProgress.html" title="fn leptos_router::RoutingProgress">RoutingProgress</a></div><div class="desc docblock-short">A visible indicator that the router is in the process of navigating
+to another route.
+This is used when <code>&lt;Router set_is_routing&gt;</code> has been provided, to
+provide some visual indicator that the page is currently loading
+async data, so that it is does not appear to have frozen. It can be
+styled independently.</div></li><li><div class="item-name"><a class="fn" href="fn.create_location.html" title="fn leptos_router::create_location">create_location</a></div><div class="desc docblock-short">Creates a reactive location from the given path and state.</div></li><li><div class="item-name"><a class="fn" href="fn.escape.html" title="fn leptos_router::escape">escape</a></div></li><li><div class="item-name"><a class="fn" href="fn.generate_route_list_inner.html" title="fn leptos_router::generate_route_list_inner">generate_route_list_inner</a></div><div class="desc docblock-short">Generates a list of all routes this application could possibly serve. This returns the raw routes in the leptos_router
+format. Odds are you want <code>generate_route_list()</code> from either the actix, axum, or viz integrations if you want
+to work with their router</div></li><li><div class="item-name"><a class="fn" href="fn.provide_server_redirect.html" title="fn leptos_router::provide_server_redirect">provide_server_redirect</a></div><div class="desc docblock-short">Provides a function that can be used to redirect the user to another
+absolute path, on the server. This should set a <code>302</code> status code and an
+appropriate <code>Location</code> header.</div></li><li><div class="item-name"><a class="fn" href="fn.unescape.html" title="fn leptos_router::unescape">unescape</a></div></li><li><div class="item-name"><a class="fn" href="fn.use_location.html" title="fn leptos_router::use_location">use_location</a></div><div class="desc docblock-short">Returns the current <a href="struct.Location.html" title="struct leptos_router::Location">Location</a>, which contains reactive variables</div></li><li><div class="item-name"><a class="fn" href="fn.use_navigate.html" title="fn leptos_router::use_navigate">use_navigate</a></div><div class="desc docblock-short">Returns a function that can be used to navigate to a new route.</div></li><li><div class="item-name"><a class="fn" href="fn.use_params.html" title="fn leptos_router::use_params">use_params</a></div><div class="desc docblock-short">Returns the current route params, parsed into the given type, or an error.</div></li><li><div class="item-name"><a class="fn" href="fn.use_params_map.html" title="fn leptos_router::use_params_map">use_params_map</a></div><div class="desc docblock-short">Returns a raw key-value map of route params.</div></li><li><div class="item-name"><a class="fn" href="fn.use_query.html" title="fn leptos_router::use_query">use_query</a></div><div class="desc docblock-short">Returns the current URL search query, parsed into the given type, or an error.</div></li><li><div class="item-name"><a class="fn" href="fn.use_query_map.html" title="fn leptos_router::use_query_map">use_query_map</a></div><div class="desc docblock-short">Returns a raw key-value map of the URL search query.</div></li><li><div class="item-name"><a class="fn" href="fn.use_resolved_path.html" title="fn leptos_router::use_resolved_path">use_resolved_path</a></div><div class="desc docblock-short">Resolves the given path relative to the current route.</div></li><li><div class="item-name"><a class="fn" href="fn.use_route.html" title="fn leptos_router::use_route">use_route</a></div><div class="desc docblock-short">Returns the current <a href="struct.RouteContext.html" title="struct leptos_router::RouteContext">RouteContext</a>, containing information about the matched route.</div></li><li><div class="item-name"><a class="fn" href="fn.use_router.html" title="fn leptos_router::use_router">use_router</a></div><div class="desc docblock-short">Returns the current <a href="struct.RouterContext.html" title="struct leptos_router::RouterContext">RouterContext</a>, containing information about the router’s state.</div></li></ul></section></div></main></body></html>
