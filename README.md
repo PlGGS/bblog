@@ -1,6 +1,6 @@
 # BBlog: A full stack blog app in Rust by Blake Boris
 
-#### [Documentation](https://bblog.blakeboris.com)
+#### [Documentation](https://bblog.blakeboris.com) (or run ```cargo doc``` to generate docs locally)
 
 #### [Demo](https://youtu.be/VyRr4a-fYEw)
 
